@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class InputShaderNode : ShaderNode {
-	public InputShaderNode() : base("InputShader", 1920, 1080, true, true)
+	public InputShaderNode() : base("InputShader", 32, 32, true, true)
 	{
 	}
 
@@ -22,10 +22,10 @@ public class InputShaderNode : ShaderNode {
 			wasdMove.x -= 1;
 		}
 		if (Input.GetKey (KeyCode.A)) {
-			wasdMove.y += 1;
+			wasdMove.y -= 1;
 		}
 		if (Input.GetKey (KeyCode.D)) {
-			wasdMove.y -= 1;
+			wasdMove.y += 1;
 		}
 
 		material_.SetVector("_wasdMovement", wasdMove);
