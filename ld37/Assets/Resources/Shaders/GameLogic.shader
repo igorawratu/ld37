@@ -70,11 +70,11 @@
 					float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(2, 0)).xy;
 					return float4(player_velocity + wasd_movement, 0, 1);
 				}
-//				else if (isTexel(uv, float2(2, 0))){
-//					float boidPos = tex2D(_MainTex, float2(2, 0)).xy;
-//					float2 wasd_movement = tex2D(_inputTex, float2(1, 0)).xy;
-//					return saturate(float4(boidPos + wasd_movement * 0.0002, 0, 1));
-//				}
+				else if (isTexel(uv, float2(4, 0))){
+					float boidPos = tex2D(_MainTex, float2(2, 0)).xy;
+					float2 wasd_movement = tex2D(_inputTex, float2(1, 0)).xy;
+					return saturate(float4(boidPos + wasd_movement * 0.0002, 0, 1));
+				}
 				else {
 					return float4(0, 0, 0, 1);
 				}

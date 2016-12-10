@@ -43,7 +43,7 @@
 			}
 			
 			float4 DrawPlayer(float2 uv) {
-				float player_size = _MainTex_TexelSize.x * 50;
+				float player_size = 0.01;
 				float2 player_pos = tex2D(_MainTex, float2(0, 0)).xy;
 				float aspect = _width / _height;
 
