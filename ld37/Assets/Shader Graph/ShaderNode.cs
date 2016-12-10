@@ -22,7 +22,7 @@ class ShaderNode
         get { return output_[curr_texture_]; }
     }
 
-    public ShaderNode(string shader_name, uint width, uint height)
+    public ShaderNode(string shader_name, uint width, uint height, bool highres)
     {
         shader_ = Shader.Find(shader_name);
         if(shader_ == null)
@@ -36,9 +36,11 @@ class ShaderNode
         }
 
         output_ = new RenderTexture[2];
-        for(int i = 0; i < 2; ++i)
+
+		RenderTextureFormat format = highres ? RenderTextureFormat.ARGBFloat : RenderTextureFormat.ARGB32;
+		for (int i = 0; i < 2; ++i)
         {
-            output_[i] = new RenderTexture((int)width, (int)height, 0);
+            output_[i] = new RenderTexture((int)width, (int)height, 0, format);
         }
 
         predecessors_ = new Dictionary<string, ShaderNode>();
@@ -114,8 +116,11 @@ class ShaderNode
 
         material_.SetFloat("_t", Time.time);
 
-        curr_texture_ = (curr_texture_ + 1) % 2;
+		curr_texture_ = (curr_texture_ + 1) % 2;
 
-        Graphics.Blit(main, output_[curr_texture_], material_);
+		material_.SetFloat("_width", output_[curr_texture_].width);
+		material_.SetFloat("_height", output_[curr_texture_].height);
+
+		Graphics.Blit(main, output_[curr_texture_], material_);
     }
 }

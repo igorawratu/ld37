@@ -6,7 +6,7 @@ public class ShaderGraph : MonoBehaviour {
 
     // Use this for initialization
     void Start() {
-        _finalNode = new ShaderNode("test", 1920, 1080);
+        _finalNode = new ShaderNode("test", 1920, 1080, false);
         _finalNode.SetPredecessor(_finalNode, "_MainTex");
     }
 
