@@ -51,9 +51,16 @@
 				if (dist < player_size) {
 					return float4(1, 0, 0, 1);
 				}
-				else {
-					return float4(0, 0, 0, 1);
+
+				for(int i = 0; i < 2; i++){
+					float2 boid_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 1)).xy;
+
+					float distBoid = length(boid_pos - uv);
+					if(distBoid < player_size){
+						return float4(1, 1, 0, 1);
+					}
 				}
+				return float4(0.5, 0, 0, 1);
 			}
 
 			fixed4 frag (v2f i) : SV_Target

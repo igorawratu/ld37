@@ -10,10 +10,11 @@ public class ShaderGraph : MonoBehaviour {
     // Use this for initialization
     void Start() {
 		_inputNode = new InputShaderNode();
-		_logicNode = new ShaderNode("GameLogic", 1920, 1080, true, true);
+		_logicNode = new ShaderNode("GameLogic", 32, 32, true, true);
 		_gameRenderNode = new ShaderNode("GameRenderer", 1920, 1080, false, true);
 		_textNode = new ShaderNode("Text", 1920, 1080, false, true);
 
+		_inputNode.SetPredecessor(_inputNode, "_MainTex");
 		_logicNode.SetPredecessor(_inputNode, "_inputTex");
 		_logicNode.SetPredecessor(_logicNode, "_MainTex");
 		_gameRenderNode.SetPredecessor(_logicNode, "_MainTex");

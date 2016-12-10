@@ -45,39 +45,49 @@
 			}
 
 			bool isTexel(float2 uv, float2 pixelPos){
-				float eps = 0.001;
-				if (abs(uv.x - (_MainTex_TexelSize.x * pixelPos.x)) < eps 
-					&& abs(uv.y - (_MainTex_TexelSize.y * pixelPos.y)) < eps)
-				{
+				float eps = 0.0001;
+//#if UNITY_HALF_TEXEL_OFFSET
+				if (abs(uv.x - (_MainTex_TexelSize.x * (pixelPos.x + 0.5))) < eps
+					&& abs(uv.y - (_MainTex_TexelSize.y * (pixelPos.y + 0.5))) < eps){
 					return true;
 				}
+//#else
+//				if (abs(uv.x - (_MainTex_TexelSize.x * pixelPos.x)) < eps
+//					&& abs(uv.y - (_MainTex_TexelSize.y * pixelPos.y)) < eps){
+//					return true;
+//				}
+//#endif
 				return false;
 			}
 
 			float4 UpdatePlayerPos(float2 uv) {
-				float eps = 0.00001;
+				float2 mouse_movement = tex2D(_inputTex, float2(0, 0)).xy;
+				float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx;
+//				return isTexel(uv, float2(5, 5)) ? float4(1, 1, 1, 1) : float4(0, 0, 0, 1);
+//				return float4(tex2D(_inputTex, uv).xy, 0, 1);				
+//				return float4(wasd_movement.xy, 0, 1);			
+//				return float4(mouse_movement.xy, 0, 1);
+
 				//player position
-				if(isTexel(uv, float2(0,0))){
+				if(isTexel(uv, float2(0, 0))){
 					float2 previous_player_pos = tex2D(_MainTex, float2(0, 0)).xy;
-					float2 player_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(2, 0)).xy;
+					float2 player_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(1, 0)).xy;
 
 					return saturate(float4(previous_player_pos + player_velocity * 0.02, 0, 1));
 				}
 				//player velocity
-				else if (isTexel(uv, float2(2, 0))) {
-					float2 player_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(2, 0)).xy * 0.02;
-					float2 mouse_movement = tex2D(_inputTex, float2(0, 0)).xy;
-					float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(2, 0)).xy;
-					return float4(player_velocity + wasd_movement, 0, 1);
+				if (isTexel(uv, float2(1, 0))) {
+					float2 player_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(1, 0)).xy * 0.2;
+					return float4(player_velocity + wasd_movement + mouse_movement, 0, 1);
 				}
-				else if (isTexel(uv, float2(4, 0))){
-					float boidPos = tex2D(_MainTex, float2(2, 0)).xy;
-					float2 wasd_movement = tex2D(_inputTex, float2(1, 0)).xy;
-					return saturate(float4(boidPos + wasd_movement * 0.0002, 0, 1));
+
+				for(int i = 0; i < 2; i++){
+					if (isTexel(uv, float2(i, 1))){
+						float boidPos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 1)).xy;
+						return saturate(float4(boidPos + wasd_movement *0.1, 0, 1));
+					}
 				}
-				else {
-					return float4(0, 0, 0, 1);
-				}
+				return float4(0, 0, 0, 1);
 			}
 
 			fixed4 frag (v2f i) : SV_Target

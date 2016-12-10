@@ -41,29 +41,34 @@
 				return o;
 			}
 			bool isTexel(float2 uv, float2 pixelPos){
-				float eps = 0.001;
-				if (abs(uv.x - (_MainTex_TexelSize.x * pixelPos.x)) < eps 
-					&& abs(uv.y - (_MainTex_TexelSize.y * pixelPos.y)) < eps)
-				{
+				float eps = 0.0001;
+//#if UNITY_HALF_TEXEL_OFFSET
+				if (abs(uv.x - (_MainTex_TexelSize.x * (pixelPos.x + 0.5))) < eps
+					&& abs(uv.y - (_MainTex_TexelSize.y * (pixelPos.y + 0.5))) < eps){
 					return true;
 				}
+//#else
+//				if (abs(uv.x - (_MainTex_TexelSize.x * pixelPos.x)) < eps
+//					&& abs(uv.y - (_MainTex_TexelSize.y * pixelPos.y)) < eps){
+//					return true;
+//				}
+//#endif
 				return false;
 			}
 			float4 UpdateInput(float2 uv) {
-
-				if(isTexel(uv, float2(0,0))){
+				if(isTexel(uv, float2(0, 0))){
 					return float4(_mouseMovement, 0, 1);
 				}
-				else if (isTexel(uv, float2(2,0))) {
+				else if (isTexel(uv, float2(1,0))) {
 					return float4(_wasdMovement, 0, 1);
 				}
-				else {
-					return float4(0, 0, 0, 1);
-				}
+				return float4(0, 0, 1, 1);
 			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
+//				return float4(_MainTex_TexelSize.xy, 0, 1);
+//				float4 col = float4(_wasdMovement, 0, 1);
 //				float4 col = float4(_mouseMovement, 0, 1);
 //				return col;
 				return UpdateInput(i.uv);

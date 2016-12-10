@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class InputShaderNode : ShaderNode {
-	public InputShaderNode() : base("InputShader", 1920, 1080, true, true)
+	public InputShaderNode() : base("InputShader", 32, 32, true, true)
 	{
 	}
 
