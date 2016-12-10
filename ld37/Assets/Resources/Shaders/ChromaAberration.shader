@@ -50,8 +50,6 @@
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				return o;
 			}
-			
-			
 
 			fixed4 frag (v2f i) : SV_Target
 			{

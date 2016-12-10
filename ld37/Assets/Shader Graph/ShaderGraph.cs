@@ -2,18 +2,21 @@
 using System.Collections;
 
 public class ShaderGraph : MonoBehaviour {
-    private ShaderNode _finalNode;
+    private ShaderNode _logicNode;
+	private InputShaderNode _inputNode;
+	private ShaderNode _gameRenderNode;
 
     // Use this for initialization
     void Start() {
-		//_finalNode = new ShaderNode("test", 1920, 1080, false);
-		_finalNode = new ShaderNode("ChromaAberration", 1920, 1080, false);
+		_inputNode = new InputShaderNode();
+		_logicNode = new ShaderNode("GameLogic", 1920, 1080, true);
+		_gameRenderNode = new ShaderNode("GameRenderer", 1920, 1080, false);
 
-		Texture2D tex = Resources.Load("Textures/test_tex") as Texture2D;
-		Debug.Log(tex);
-		//_finalNode.SetPredecessor(_finalNode, "_MainTex");
-		_finalNode.SetTexture(tex, "_MainTex");
-    }
+		_logicNode.SetPredecessor(_inputNode, "_inputTex");
+		_logicNode.SetPredecessor(_logicNode, "_MainTex");
+		_gameRenderNode.SetPredecessor(_logicNode, "_MainTex");
+
+	}
 
     // Update is called once per frame
     void Update() {
@@ -22,12 +25,14 @@ public class ShaderGraph : MonoBehaviour {
 
     void OnDestroy()
     {
-        _finalNode.Release();
-    }
+		_logicNode.Release();
+		_inputNode.Release();
+		_gameRenderNode.Release();
+	}
 
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-        _finalNode.Execute();
-        Graphics.Blit(_finalNode.OutputTexture, dest);
+		_gameRenderNode.Execute();
+        Graphics.Blit(_gameRenderNode.OutputTexture, dest);
     }
 }
