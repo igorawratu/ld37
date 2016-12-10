@@ -95,13 +95,33 @@ public class ShaderNode
             {
                 predecessor.Value.Execute();
                 material_.SetTexture(predecessor.Key, predecessor.Value.OutputTexture);
+				Vector4 texelsize = Vector4.zero;
+				if(predecessor.Value.OutputTexture != null)
+				{
+					texelsize.x = 1f / predecessor.Value.OutputTexture.width;
+					texelsize.y = 1f / predecessor.Value.OutputTexture.height;
+					texelsize.z = predecessor.Value.OutputTexture.width;
+					texelsize.w = predecessor.Value.OutputTexture.height;
+				}
+				material_.SetVector(predecessor.Key + "_TexelSize", texelsize);
             }
         }
         
         foreach(var texture in input_textures_)
         {
             material_.SetTexture(texture.Key, texture.Value);
-        }
+
+			Vector4 texelsize = Vector4.zero;
+			if (texture.Value != null)
+			{
+				texelsize.x = 1f / texture.Value.width;
+				texelsize.y = 1f / texture.Value.height;
+				texelsize.z = texture.Value.width;
+				texelsize.w = texture.Value.height;
+			}
+
+			material_.SetVector(texture.Key + "_TexelSize", texelsize);
+		}
 
         Texture main = null;
 

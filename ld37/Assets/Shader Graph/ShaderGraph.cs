@@ -5,12 +5,14 @@ public class ShaderGraph : MonoBehaviour {
     private ShaderNode _logicNode;
 	private InputShaderNode _inputNode;
 	private ShaderNode _gameRenderNode;
+	private ShaderNode _textNode;
 
     // Use this for initialization
     void Start() {
 		_inputNode = new InputShaderNode();
 		_logicNode = new ShaderNode("GameLogic", 1920, 1080, true);
 		_gameRenderNode = new ShaderNode("GameRenderer", 1920, 1080, false);
+		_textNode = new ShaderNode("Text", 1920, 1080, false);
 
 		_logicNode.SetPredecessor(_inputNode, "_inputTex");
 		_logicNode.SetPredecessor(_logicNode, "_MainTex");
@@ -28,6 +30,7 @@ public class ShaderGraph : MonoBehaviour {
 		_logicNode.Release();
 		_inputNode.Release();
 		_gameRenderNode.Release();
+		_textNode.Release();
 	}
 
     void OnRenderImage(RenderTexture src, RenderTexture dest)

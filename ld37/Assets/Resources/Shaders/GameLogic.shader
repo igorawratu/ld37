@@ -43,20 +43,20 @@
 			}
 
 			float4 UpdatePlayerPos(float2 uv) {
-				float eps = 0.001;
+				float eps = 0.00001;
 				//player position
 				if (abs(uv.x) < eps && abs(uv.y) < eps) {
 					float2 previous_player_pos = tex2D(_MainTex, float2(0, 0)).xy;
 					float2 player_velocity = tex2D(_inputTex, _MainTex_TexelSize.xy * float2(1, 0)).xy;
 					float2 mouse_movement = tex2D(_inputTex, float2(0, 0)).xy;
 
-					return saturate(float4(previous_player_pos + player_velocity * 0.02, 0, 1));
+					return saturate(float4(/*previous_player_pos + */player_velocity * 0.02, 0, 1));
 				}
 				//player velocity
 				else if (abs(uv.x - _MainTex_TexelSize.x) < eps && abs(uv.y) < eps ) {
-					float2 player_velocity = tex2D(_inputTex, _MainTex_TexelSize.xy * float2(1, 0)).xy * 0.02;
-					float2 mouse_movement = tex2D(_inputTex, float2(0, 0)).xy;
-
+					float2 player_velocity = tex2D(_inputTex, _MainTex_TexelSize.xy * float2(1, 0)).xy;
+					float2 mouse_movement = tex2D(_inputTex, float2(0, 0)).xy * 0.02;
+					return float4(1, 1, 1, 1);
 					return float4(player_velocity + mouse_movement, 0, 1);
 				}
 				else {
