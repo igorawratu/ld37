@@ -2,20 +2,20 @@
 using System;
 using System.Collections.Generic;
 
-class ShaderNode
+public class ShaderNode
 {
     public const uint MAX_WIDTH = 4096;
     public const uint MAX_HEIGHT = 4096;
 
-    private Shader shader_ = null;
-    private Material material_ = null;
-    private RenderTexture [] output_ = null;
-    private uint curr_texture_ = 0;
+    protected Shader shader_ = null;
+	protected Material material_ = null;
+	protected RenderTexture [] output_ = null;
+	protected uint curr_texture_ = 0;
 
-    private Dictionary<string, ShaderNode> predecessors_;
-    private Dictionary<string, Texture> input_textures_;
+	protected Dictionary<string, ShaderNode> predecessors_;
+	protected Dictionary<string, Texture> input_textures_;
 
-    private ulong last_frame_num_ = 0;
+	protected ulong last_frame_num_ = 0;
 
     public RenderTexture OutputTexture
     {
@@ -80,7 +80,7 @@ class ShaderNode
         predecessors_[input_name] = predecessor;
     }
 
-    public void Execute()
+    public virtual void Execute()
     {
         if((ulong)Time.frameCount == last_frame_num_)
         {
