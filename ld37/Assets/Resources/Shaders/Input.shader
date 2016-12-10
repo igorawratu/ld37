@@ -29,8 +29,10 @@
 
 			sampler2D _MainTex;
 			float2 _mouseMovement;
+			float2 _wasdMovement;
 			float4 _MainTex_ST;
-			
+			float4 _MainTex_TexelSize;
+
 			v2f vert (appdata v)
 			{
 				v2f o;
@@ -38,12 +40,33 @@
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				return o;
 			}
-			
+			bool isTexel(float2 uv, float2 pixelPos){
+				float eps = 0.001;
+				if (abs(uv.x - (_MainTex_TexelSize.x * pixelPos.x)) < eps 
+					&& abs(uv.y - (_MainTex_TexelSize.y * pixelPos.y)) < eps)
+				{
+					return true;
+				}
+				return false;
+			}
+			float4 UpdateInput(float2 uv) {
+
+				if(isTexel(uv, float2(0,0))){
+					return float4(_mouseMovement, 0, 1);
+				}
+				else if (isTexel(uv, float2(2,0))) {
+					return float4(_wasdMovement, 0, 1);
+				}
+				else {
+					return float4(0, 0, 0, 1);
+				}
+			}
+
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float4 col = float4(_mouseMovement, 0, 1);
-
-				return col;
+//				float4 col = float4(_mouseMovement, 0, 1);
+//				return col;
+				return UpdateInput(i.uv);
 			}
 			ENDCG
 		}
