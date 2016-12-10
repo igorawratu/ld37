@@ -20,12 +20,14 @@ public class AudioGen : MonoBehaviour
 
 	void Awake()
 	{
+		_sfxHit = -100f;
+
 		_sampleRate = AudioSettings.outputSampleRate;
 		_sampleStep = 1f / (float)_sampleRate;
 		//Debug.Log(AudioSettings.outputSampleRate);
 		for (int i = 0; i < _randomBuffer.Length; i++)
 		{
-			_randomBuffer[i] = UnityEngine.Random.value;
+			_randomBuffer[i] = UnityEngine.Random.Range(-1f, 1f);
 		}
 		//Application.targetFrameRate = 60;
 	}
@@ -84,6 +86,11 @@ public class AudioGen : MonoBehaviour
 		return _randomBuffer[ro];
 	}
 
+	private float Mix(float a, float b)
+	{
+		return (a + b) * 0.8f;// (a + b) - (a * b);
+	}
+
 	private static float EnvADSR(float t, float volAttack, float volSustain, float a, float d, float s, float r)
 	{
 		// Attack
@@ -112,6 +119,20 @@ public class AudioGen : MonoBehaviour
 		return 0f;
 	}
 
+	//private static float Song[];
+
+	private float _sfxHit;
+
+	private void Update()
+	{
+		//_sfxHit = -100f;
+		if (Input.anyKeyDown)
+		{
+			_sfxHit = t;
+		}
+		
+	}
+
 	void OnAudioFilterRead(float[] values, int numChannels)
 	{
 		// 48000 samples / second
@@ -124,19 +145,34 @@ public class AudioGen : MonoBehaviour
 
 		for (int i = 0; i < numSamples; i++)
 		{
-			//values[i] = GenSquare(t * NoteC8) * EnvADSR(t, 1f, 0.5f, 0.1f, 0.1f, 0.2f, 0.1f);
-			//values[i] = GenSine(t * NoteC4) * EnvADSR(t, 1f, 0.5f, 0.2f, 0.1f, 0.5f, 0.2f);
+			values[i] = 0f;
 
-			values[i] = ((GenSine(t * NoteC4) + GenSine(t * NoteC2) + GenSine(t * NoteC8)) / 3f) * EnvADSR(t, 1f, 0.5f, 0.1f, 0.1f, 0.2f, 0.1f);
+			//values[i] = ((GenSine(t * NoteC4) + GenSine(t * NoteC2) + GenSine(t * NoteC8)) / 3f) * EnvADSR(t, 1f, 0.5f, 0.1f, 0.1f, 0.2f, 0.1f);
 			//values[i] = GenSaw(t * NoteC4);
-			//values[i] = GenNoise(t * NoteC8);
+
+			//float sfxHit = GenNoise(t * NoteC4 * 100f) * EnvADSR(t - _sfxHit, 1f, 0.25f, 0.03f, 0.0f, 0.0f, 0.03f);
+			//float sfxHit = GenSine(t * NoteC4) * EnvADSR(t - _sfxHit, 1f, 0.5f, 0.2f, 0.1f, 0.5f, 0.2f);
+			float sfxHit = (GenSine((t + 0.5f) * NoteC4) - GenSaw(t * NoteC8)) * EnvADSR(t - _sfxHit, 1f, 0.5f, 0.1f, 0.0f, 0.2f, 0.2f);
+
+			float drum = GenNoise(t * NoteC4 * 10f) * EnvADSR(Mathf.Repeat(t, 1f), 1f, 0.25f, 0.02f, 0.00f, 0.0f, 0.02f);
+			float hihat = GenNoise(t * NoteC4 * 100f) * EnvADSR(Mathf.Repeat(t, 2f), 1f, 0.25f, 0.01f, 0.05f, 0.0f, 0.0f);
+
+			float deepBass = Mix(GenSine(t * NoteC2), GenSine(t * NoteC2 / 2f));
+
+			values[i] = Mix(values[i], drum);
+			values[i] = Mix(values[i], sfxHit);
+			values[i] = Mix(values[i], deepBass);
 			//values[i] = ((Mathf.Abs(Mathf.Repeat(t * 2f, 2f) - 1f) - 0.5f) * 2f);          // Triangle (correct)
+
+			//values[i] = GenSquare(t * NoteC4) * EnvADSR(t, 1f, 0.5f, 0.1f, 0.1f, 0.2f, 0.1f);
 
 			/*int ro = (int)(t);
 			ro %= _randomBuffer.Length;
 			values[i] = _randomBuffer[ro];*/
 
 			t += offset;
+
+			values[i] = Mathf.Clamp01(values[i] * 0.5f);
 		}
 	}
 }
