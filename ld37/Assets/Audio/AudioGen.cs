@@ -7,6 +7,9 @@ public class AudioGen : MonoBehaviour
 	const float NoteA = 440.0f;
 	const float NoteC3 = 130.81f;
 	const float NoteC4 = 261.6f;
+	const float NoteD4 = 293.66f;
+	const float NoteDS4 = 311.13f;
+	const float NoteE4 = 329.63f;
 	const float NoteC2 = 65.41f;
 	const float NoteC8 = 4186.01f;
 
@@ -131,7 +134,30 @@ public class AudioGen : MonoBehaviour
 		return (float)a / 65536f;
 	}
 
-	private float[] _bassSong = { NoteC4, NoteC3, NoteC4, NoteC4, NoteC3 };
+	private float[] _leadSong = 
+	{ 
+		NoteC4,
+		0,
+		NoteD4,
+		0,
+
+		NoteDS4,
+		0,
+		NoteC4,
+		NoteC4,
+
+		0,
+		NoteE4,
+		NoteC4,
+		0,
+
+		NoteDS4,
+		0,
+		0,
+		0,
+	};
+
+	private float[] _bassSong = { NoteC4, NoteC3, NoteC4, NoteC4, NoteC4, NoteC3 };
 
 	private float _sfxHit;
 
@@ -170,22 +196,42 @@ public class AudioGen : MonoBehaviour
 
 			float drum = GenNoise(t * NoteC4 * 10f) * EnvADSR(Mathf.Repeat(t, 1f), 1f, 0.25f, 0.02f, 0.00f, 0.0f, 0.02f);
 
-			float vibrato = Mathf.PingPong(t, 0.25f) / 0.25f;
+			float vibrato = Mathf.PingPong(t, 2.5f) / 2.5f;
 
 			float hihat = GenNoise(t * NoteC4 * 100f) * EnvADSR(Mathf.Repeat(t, 2f), 1f, 0.25f, 0.01f, 0.05f, 0.0f, 0.0f);
 
-			float rowsPerSecond = 1f;
-			int songRow = (int)(t / rowsPerSecond);
-			float bassFreq = _bassSong[songRow % _bassSong.Length];
-			float deepBass = vibrato * Mix(GenSine(t * bassFreq / 2f), GenSine((t + 0.5f) * bassFreq / 4f));
+			float deepBass = 0f;
+			{
+				float rowsPerSecond = 1f;
+				int songRow = (int)(t / rowsPerSecond);
+				float bassFreq = _bassSong[songRow % _bassSong.Length];
+				deepBass = vibrato * Mix(GenSine(t * bassFreq / 2f), GenSine((t + 0.5f) * bassFreq / 4f));
+				//deepBass *= vibrato * Mix(GenSquare(t * bassFreq / 2f), GenSaw((t + 0.25f) * bassFreq / 4f));
+			}
+			float lead = 0f;
+			{
+				float rowsPerSecond = 4f;
+				int songRow = (int)(t * rowsPerSecond);
+				float leadHit = Mathf.Clamp01(_leadSong[songRow % _leadSong.Length]);
+				float leadFreq = _leadSong[songRow % _leadSong.Length];
 
-			sfxHit = opQuatiseBits(sfxHit, 14);
+				float rowTime = (float)songRow / rowsPerSecond;
+				float tWrapped = t;
+				leadHit *= EnvADSR(tWrapped - rowTime, 1f, 0.25f, 0.05f, 0.05f, 0.2f, 0.02f);
+				lead = GenTriangle(t * leadFreq) * leadHit;
+				//lead = opQuatiseBits(lead, 14);
+			}
+
+
+
+			//sfxHit = opQuatiseBits(sfxHit, 14);
 			//hihat = opQuatiseBits(hihat, 24);
 
 			//values[i] = Mix(values[i], drum);
 			//values[i] = Mix(values[i], hihat);
 			values[i] = Mix(values[i], sfxHit);
-			values[i] = Mix(values[i], deepBass);
+			values[i] = Mix(values[i], lead);
+			values[i] = Mix(values[i], deepBass * 0.25f);
 			//values[i] = ((Mathf.Abs(Mathf.Repeat(t * 2f, 2f) - 1f) - 0.5f) * 2f);          // Triangle (correct)
 
 			//values[i] = GenSquare(t * NoteC4) * EnvADSR(t, 1f, 0.5f, 0.1f, 0.1f, 0.2f, 0.1f);
