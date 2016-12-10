@@ -88,7 +88,7 @@ public class AudioGen : MonoBehaviour
 
 	private float Mix(float a, float b)
 	{
-		return (a + b) * 0.8f;// (a + b) - (a * b);
+		return (a + b);// (a + b) - (a * b);
 	}
 
 	private static float EnvADSR(float t, float volAttack, float volSustain, float a, float d, float s, float r)
@@ -119,7 +119,19 @@ public class AudioGen : MonoBehaviour
 		return 0f;
 	}
 
-	//private static float Song[];
+	//private float _songLength;
+	//private static float Song[]
+		
+
+	private static float opQuatiseBits(float x, int bits)
+	{
+		int a = (int)(x * 65536f);
+		a >>= bits;
+		a <<= bits;
+		return (float)a / 65536f;
+	}
+
+	private float[] _bassSong = { NoteC4, NoteC3, NoteC4, NoteC4, NoteC3 };
 
 	private float _sfxHit;
 
@@ -152,14 +164,26 @@ public class AudioGen : MonoBehaviour
 
 			//float sfxHit = GenNoise(t * NoteC4 * 100f) * EnvADSR(t - _sfxHit, 1f, 0.25f, 0.03f, 0.0f, 0.0f, 0.03f);
 			//float sfxHit = GenSine(t * NoteC4) * EnvADSR(t - _sfxHit, 1f, 0.5f, 0.2f, 0.1f, 0.5f, 0.2f);
-			float sfxHit = (GenSine((t + 0.5f) * NoteC4) - GenSaw(t * NoteC8)) * EnvADSR(t - _sfxHit, 1f, 0.5f, 0.1f, 0.0f, 0.2f, 0.2f);
+
+			float hitEnv = EnvADSR(t - _sfxHit, 1f, 0.5f, 0.1f, 0.0f, 0.2f, 0.2f);
+			float sfxHit = GenSine(t * Mathf.Lerp(NoteC2, NoteC4, hitEnv)) * hitEnv;
 
 			float drum = GenNoise(t * NoteC4 * 10f) * EnvADSR(Mathf.Repeat(t, 1f), 1f, 0.25f, 0.02f, 0.00f, 0.0f, 0.02f);
+
+			float vibrato = Mathf.PingPong(t, 0.25f) / 0.25f;
+
 			float hihat = GenNoise(t * NoteC4 * 100f) * EnvADSR(Mathf.Repeat(t, 2f), 1f, 0.25f, 0.01f, 0.05f, 0.0f, 0.0f);
 
-			float deepBass = Mix(GenSine(t * NoteC2), GenSine(t * NoteC2 / 2f));
+			float rowsPerSecond = 1f;
+			int songRow = (int)(t / rowsPerSecond);
+			float bassFreq = _bassSong[songRow % _bassSong.Length];
+			float deepBass = vibrato * Mix(GenSine(t * bassFreq / 2f), GenSine((t + 0.5f) * bassFreq / 4f));
 
-			values[i] = Mix(values[i], drum);
+			sfxHit = opQuatiseBits(sfxHit, 14);
+			//hihat = opQuatiseBits(hihat, 24);
+
+			//values[i] = Mix(values[i], drum);
+			//values[i] = Mix(values[i], hihat);
 			values[i] = Mix(values[i], sfxHit);
 			values[i] = Mix(values[i], deepBass);
 			//values[i] = ((Mathf.Abs(Mathf.Repeat(t * 2f, 2f) - 1f) - 0.5f) * 2f);          // Triangle (correct)
