@@ -40,6 +40,8 @@
 			float _width;
 			float _height;
 
+			float _dt;
+
 			v2f vert (appdata v)
 			{
 				v2f o;
@@ -64,28 +66,49 @@
 				return false;
 			}
 
-			float rand(float co){
-			    return frac(sin(dot(float2(co, _t),float2(12.9898,78.233))) * 43758.5453);
+			float2 rand2(float2 co){
+			    return float2(frac(sin(dot(co * _t, float2(12.9898,78.233))) * 43758.5453), frac(sin(dot(co * _t, float2(12.9898, 78.233))) * 43758.5453));
+			}
+
+			float rand1(float co) {
+				return frac(sin(dot(float2(co, co), float2(12.9898, 78.233))) * 43758.5453);
 			}
 
 			float4 UpdatePlayerPos(float2 uv) {
 				float2 mouse_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(0, 0)).xy;
 				float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx;
+
+				//return float4(rand2(uv), 0, 1);
 //				return float4(rand(uv.x),rand(uv.y), 0, 1);
 
 				if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 0))) {
-					float2 boid_pos = tex2D(_MainTex, float2(uv.x, 0)).xy;
-					float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy;
+					float4 boid_pos = tex2D(_MainTex, float2(uv.x, 0));
+					
+					if (boid_pos.z > 0.5) {
+						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy;
 
-					return saturate(float4(boid_pos + boid_velocity * 0.02, 0, 1));
+						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02);
+
+						return float4(newpos, boid_pos.z, 1);
+					}
+					//spawn logic here
+					else {
+						float spawn_prob = min((_t / 60.0), 1);
+						spawn_prob *= _dt;
+
+						float chance = rand1(uv.x);
+						chance = chance < 0 ? -chance : chance;
+
+						//if (spawn_prob > chance) {
+							//boid_pos.z = 1;
+						//}
+
+						return boid_pos;
+					}
 				}
 				else if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 1))) {
 					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1)).xy * 0.02;
 					return float4(boid_velocity + wasd_movement + mouse_movement, 0, 1);
-				}
-				else if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 2))) {
-					float2 boid_active = tex2D(_MainTex, float2(uv.x, 2 * _MainTex_TexelSize.y)).xy * 0.02;
-					return float4(boid_active, 0, 1);
 				}
 				else {
 					return float4(0, 0, 0, 1);

@@ -138,8 +138,9 @@ public class ShaderNode
         }
 
         material_.SetFloat("_t", Time.time);
+        material_.SetFloat("_dt", Time.deltaTime);
 
-		curr_texture_ = (curr_texture_ + 1) % 2;
+        curr_texture_ = (curr_texture_ + 1) % 2;
 
 		material_.SetFloat("_width", output_[curr_texture_].width);
 		material_.SetFloat("_height", output_[curr_texture_].height);
