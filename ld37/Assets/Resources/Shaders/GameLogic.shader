@@ -96,25 +96,25 @@
 
 				return pos.x < texel_width || pos.y < texel_height || 1 - pos.x < texel_width || 1 - pos.y < texel_height;
 			}
-
-			float2 toTexel(float2 input)
-			{
-				input *=0.5;
-				input += 0.5;
-				return input;
-			}
-			float2 fromTexel(float2 input)
-			{
-				input -= 0.5;
-				input *=2.0;
-				return input;
-			}
+//
+//			float2 toTexel(float2 input)
+//			{
+//				input *=0.5;
+//				input += 0.5;
+//				return input;
+//			}
+//			float2 fromTexel(float2 input)
+//			{
+//				input -= 0.5;
+//				input *=2.0;
+//				return input;
+//			}
 
 			float4 UpdatePlayerPos(float2 uv) {
 				
 				float max_score = 10000;
-				float2 mouse_movement = fromTexel(tex2D(_inputTex, _inputTex_TexelSize.xy * float2(0, 0)).xy);
-				float2 wasd_movement = fromTexel(tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx);
+				float2 mouse_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(0, 0)).xy;
+				float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx;
 				float4 prev_score = tex2D(_MainTex, float2(0.5 * _MainTex_TexelSize.x, _MainTex_TexelSize.y * 2.5));
 
 				if (prev_score.y > 0.5) {
@@ -136,7 +136,7 @@
 						if (boid_pos.w > 0.5) {
 							return float4(0, 0, 0, 0);
 						}
-						float2 boid_velocity = fromTexel(tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy);
+						float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy;
 						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02);
 
 						float destroying = HitBorder(boid_pos.xy, 0.25) ? 1 : 0;
@@ -170,7 +170,7 @@
 					}
 				}
 				else if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 1))) {
-					float2 boid_velocity = fromTexel(tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy);
+					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy;
 					float4 boid_pos = tex2D(_MainTex, float2(uv.x, 0));
 					float2 new_vel = boid_velocity * 0.02;
 					if(uv.x < 0.00001){
@@ -190,7 +190,7 @@
 
 
 					float2 old_vel = length(new_vel) == 0 ? boid_velocity : new_vel;
-					return float4(toTexel(new_vel), toTexel(old_vel));
+					return float4(new_vel, old_vel);
 				}
 				else if (isTexel(uv, float2(0, 2))) {
 					if (_t < 0.5) {
