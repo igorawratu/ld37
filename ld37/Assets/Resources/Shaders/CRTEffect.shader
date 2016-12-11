@@ -83,6 +83,8 @@
 				float pixel_size_x = texel_width * size;
 				float pixel_gap_x = texel_width * gap;
 
+				//uv += float2(sin(_t) * texel_width * 100, sin(_t) * texel_height * 100);
+
 				float modded_v = abs(uv.y) % pixel_gap_y;
 				float modded_u = abs(uv.x) % pixel_gap_x;
 				

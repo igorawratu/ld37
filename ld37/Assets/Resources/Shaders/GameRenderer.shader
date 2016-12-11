@@ -429,14 +429,40 @@
 				return DrawNumber(time, 1, uv, float2(0.5, 0.5), float4(0.8, 0.2, 0.2, 1), true);
 			}
 
+			float4 DrawTimeScore(float2 uv, float score, float score_upper, float score_lower, float time_lower, float time_upper) {
+				float aspect = _width / _height;
+				float4 col = float4(0, 0, 0, 1);
 
+				float4 time_col = float4(0.2, 0.8, 0.2, 1);
+				float4 score_col = float4(0.8, 0.2, 0.2, 1);
+
+				if (score < score_upper && score > score_lower) {
+					score_col = float4(0.8, 0.8, 0.2, 1);
+				}
+				else if (score < score_lower) {
+					score_col = float4(0.8, 0.2, 0.2, 1);
+				}
+
+				if (_t < time_upper && _t > time_lower) {
+					score_col = float4(0.8, 0.8, 0.2, 1);
+				}
+				else if (_t < time_lower) {
+					score_col = float4(0.2, 0.8, 0.2, 1);
+				}
+
+				col = Overwrite(col, DrawNumber(_t, 0.5, uv, float2(0.2 - (0.5 * (aspect / 2)), 0.9), time_col, false));
+				col = Overwrite(col, DrawNumber(score, 0.5, uv, float2(0.5 - (0.5 * (aspect / 2)), 0.9), score_col, false));
+
+				return col;
+			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float4 col = float4(0.4, 0.4, 0.4, 1);
+				float4 col = float4(0.3, 0.3, 0.3, 1);
 				//return DrawPlayer(i.uv);
 
-				col = Overwrite(col, DrawEndGame(i.uv, 3401349));
+				col = Overwrite(col, DrawEndGame(i.uv, 34049));
+				col = Overwrite(col, DrawTimeScore(i.uv, _t, 25, 10, 5, 15));
 
 				return col;
 			}
