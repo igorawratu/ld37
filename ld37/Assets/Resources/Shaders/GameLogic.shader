@@ -90,8 +90,12 @@
 
 					if (boid_pos.z > 0.5) {
 						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy ;
+						float2 repulsive_force = float2(0.0,0.0);
+						float player_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(0, 0)).xy ;
+						repulsive_force = length(player_pos-boid_pos);
+						 
 
-						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02);
+						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02 + repulsive_force*2);
 
 						return float4(newpos, boid_pos.z, 1);
 					}
