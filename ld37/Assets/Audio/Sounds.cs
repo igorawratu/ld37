@@ -5,11 +5,11 @@ public class Sounds : AudioGen
 {
 	public ShaderGraph _graph;
 	private Texture2D _readableLogicTexture;
-	private float _sfxHit;
+	private float _sfxHitTime;
 
 	public override void Awake()
 	{
-		_sfxHit = -100f;
+		_sfxHitTime = -100f;
 		base.Awake();
 	}
 
@@ -46,9 +46,9 @@ public class Sounds : AudioGen
 		Color c1 = _readableLogicTexture.GetPixel(0, 0);
 		//Debug.Log(c1.r.ToString("F4") + " " + c1.g.ToString("F4") + " " + c1.b.ToString("F4") + " " + c1.a.ToString("F4"));
 
-		if (Input.anyKeyDown || c1.r > 0.0f)
+		if (Input.anyKeyDown)
 		{
-			_sfxHit = t;
+			_sfxHitTime = t;
 		}
 	}
 
@@ -62,7 +62,7 @@ public class Sounds : AudioGen
 		{
 			values[i] = 0f;
 
-			float hitEnv = EnvADSR(t - _sfxHit, 1f, 0.5f, 0.1f, 0.0f, 0.2f, 0.2f);
+			float hitEnv = EnvADSR(t - _sfxHitTime, 1f, 0.5f, 0.1f, 0.0f, 0.2f, 0.2f);
 			float sfxHit = GenSine(t * Mathf.Lerp(NoteC2, NoteC4, hitEnv)) * hitEnv;
 
 			values[i] = Mix(values[i], sfxHit);
