@@ -67,11 +67,11 @@
 			}
 
 			float2 rand2(float2 co){
-			    return float2(frac(sin(dot(co * _t, float2(12.9898,78.233))) * 43758.5453), frac(sin(dot(co * _t, float2(12.9898, 78.233))) * 43758.5453));
+			    return float2(frac(sin(dot(co * _t, float2(12.9898, 78.233))) * 43758.5453), frac(sin(dot(co * _t, float2(12.9898, 78.233))) * 43758.5453));
 			}
 
 			float rand1(float co) {
-				return frac(sin(dot(float2(co, co), float2(12.9898, 78.233))) * 43758.5453);
+				return frac(sin(dot(float2(co, _t), float2(12.9898, 78.233))) * 43758.5453);
 			}
 
 			float4 UpdatePlayerPos(float2 uv) {
@@ -83,9 +83,13 @@
 
 				if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 0))) {
 					float4 boid_pos = tex2D(_MainTex, float2(uv.x, 0));
-					
+
+					if (_t < 0.5) {
+						return float4(0, 0, 0, 1);
+					}
+
 					if (boid_pos.z > 0.5) {
-						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy;
+						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy ;
 
 						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02);
 
@@ -93,15 +97,20 @@
 					}
 					//spawn logic here
 					else {
-						float spawn_prob = min((_t / 60.0), 1);
+						float spawn_prob = min(_t / 60, 1);
 						spawn_prob *= _dt;
+						spawn_prob *= 0.00001;
 
-						float chance = rand1(uv.x);
+						float chance = abs(rand1(uv.x));
 						chance = chance < 0 ? -chance : chance;
 
-						//if (spawn_prob > chance) {
-							//boid_pos.z = 1;
-						//}
+						if (spawn_prob >= chance) {
+							boid_pos.z = 1;
+							boid_pos.xy = rand2(uv);
+						}
+						else{
+							boid_pos.z = 0;
+						}
 
 						return boid_pos;
 					}
