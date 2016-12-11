@@ -458,13 +458,26 @@
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float4 col = float4(0.3, 0.3, 0.3, 1);
+				float4 col = float4(0.2, 0.2, 0.2, 1);
 				//return DrawPlayer(i.uv);
 
 				
 				col = Overwrite(col, DrawRoom(i.uv, float2(0.5, 0.5), 4));
-				col = Overwrite(col, DrawPerson(i.uv, float2(0.5, 0.5), float2(sin(_t), cos(_t)), float4(0.9, 0.3, 0.3, 1), float4(0.1, 0.1, 0.1, 1),
-					float4(0.5, 0.3, 0.3, 1), 0.25));
+
+				for (int j = 0; j < 32; ++j) {
+					float4 pos = tex2D(_MainTex, float2(((float)j + 0.5) * _MainTex_TexelSize.x, 0.5 * _MainTex_TexelSize.y));
+					float4 vel = tex2D(_MainTex, float2(((float)j + 0.5) * _MainTex_TexelSize.x, 1.5 * _MainTex_TexelSize.y));
+
+					if (pos.z > 0.5) {
+						float2 orientation = vel.zw;
+						if (length(orientation) == 0) {
+							orientation.y = -1;
+						}
+
+						col = Overwrite(col, DrawPerson(i.uv, pos.xy, normalize(orientation), float4(0.9, 0.3, 0.3, 1), float4(0.1, 0.1, 0.1, 1),
+							float4(0.5, 0.3, 0.3, 1), 0.25));
+					}
+				}
 
 				col = Overwrite(col, DrawEndGame(i.uv, 34049));
 				col = Overwrite(col, DrawTimeScore(i.uv, _t, 25, 10, 5, 15));

@@ -111,7 +111,7 @@
 
 						if (spawn_prob >= chance) {
 							boid_pos.z = 1;
-							boid_pos.xy = rand2(uv);
+							boid_pos.xy = (rand2(uv) + float2(1, 1)) / 2;
 						}
 						else{
 							boid_pos.z = 0;
@@ -121,8 +121,11 @@
 					}
 				}
 				else if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 1))) {
-					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1)).xy * 0.02;
-					return float4(boid_velocity + wasd_movement + mouse_movement, 0, 1);
+					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy;
+					float2 new_vel = boid_velocity + wasd_movement * 0.02 + mouse_movement * 0.02;
+
+					float2 old_vel = length(new_vel) == 0 ? boid_velocity : new_vel;
+					return float4(new_vel, old_vel);
 				}
 				else {
 					return float4(0, 0, 0, 1);
