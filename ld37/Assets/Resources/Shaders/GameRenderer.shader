@@ -272,13 +272,15 @@
 				}
 			}
 
-			float4 DrawNumber(uint number, float size, float2 uv, float2 pos, float4 text_col) {
+			float4 DrawNumber(uint number, float size, float2 uv, float2 pos, float4 text_col, bool center) {
 				uint digits = NumDigits(number);
 				float4 col = float4(0, 0, 0, 0);
 
+				float center_offset = center ? (float)digits / 2.0 : 0;
+
 				for (int i = 0; i < digits; ++i) {
 					uint div_by = pow(10, digits - i - 1);
-					float2 currPos = float2(size * 0.15 * i + pos.x, pos.y);
+					float2 currPos = float2(size * 0.15 * ((float)i - center_offset) + pos.x, pos.y);
 					uint digit = (number / div_by) % 10;
 
 					col = max(col, DrawDigit(digit, size, currPos, uv));
@@ -423,16 +425,18 @@
 				return float4(0.5, 0, 0, 1);
 			}
 
-			float4 DrawEndGame(float2 uv) {
-				return DrawNumber(_t, 1, uv, float2(0.5, 0.5), float4(0.8, 0.2, 0.2, 1));
+			float4 DrawEndGame(float2 uv, float time) {
+				return DrawNumber(time, 1, uv, float2(0.5, 0.5), float4(0.8, 0.2, 0.2, 1), true);
 			}
+
+
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float4 col = float4(0.2, 0.2, 0.2, 1);
+				float4 col = float4(0.4, 0.4, 0.4, 1);
 				//return DrawPlayer(i.uv);
 
-				col = Overwrite(col, DrawEndGame(i.uv));
+				col = Overwrite(col, DrawEndGame(i.uv, 3401349));
 
 				return col;
 			}
