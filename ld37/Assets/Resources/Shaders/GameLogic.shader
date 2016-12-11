@@ -97,9 +97,14 @@
 					}
 					//spawn logic here
 					else {
+						float timer = _t % 1.0;
+
+						if (abs(timer) > 0.1) {
+							return boid_pos;
+						}
+
 						float spawn_prob = min(_t / 60, 1);
 						spawn_prob *= _dt;
-						spawn_prob *= 0.00001;
 
 						float chance = abs(rand1(uv.x));
 						chance = chance < 0 ? -chance : chance;
