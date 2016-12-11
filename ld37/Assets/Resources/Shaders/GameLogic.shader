@@ -81,9 +81,12 @@
 				float2 fixed_uv = person_pos - room_pos;
 
 				return abs(fixed_uv.x) < halfdims.x && abs(fixed_uv.y) < halfdims.y;
+			}
+
 			float2 rand2(float co){
 			    return float2(rand1(co), rand1(rand1(co)));
 			}
+
 			float2 rand2(float co, float time){
 			    return float2(rand1(co, time), rand1(rand1(co, time), time));			
 		    }
