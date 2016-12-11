@@ -124,6 +124,8 @@
 				//return float4(rand2(uv), 0, 1);
 //				return float4(rand(uv.x),rand(uv.y), 0, 1);
 
+				
+				//boids
 				if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 0))) {
 					if (_t < 0.5) {
 						return float4(0, 0, 0, 0);
@@ -139,12 +141,22 @@
 						float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy;
 						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02);
 
+						if(uv.x  - 0.5 * _MainTex_TexelSize.x < 0.00001){
+							return float4(newpos, boid_pos.z, 0);
+						}
 						float destroying = HitBorder(boid_pos.xy, 0.25) ? 1 : 0;
 
 						return float4(newpos, boid_pos.z, destroying);
 					}
 					//spawn logic here
 					else {
+						if(uv.x - 0.5 * _MainTex_TexelSize.x< 0.00001){
+							boid_pos.w = 0;
+							boid_pos.z = 1;
+							boid_pos.xy = (rand2(uv.x).xy + float2(1, 1)) / 2;
+							return boid_pos;
+						}
+
 						float timer = _t % 1.0;
 
 						if (abs(timer) > 0.1) {
@@ -173,18 +185,18 @@
 					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy;
 					float4 boid_pos = tex2D(_MainTex, float2(uv.x, 0));
 					float2 new_vel = boid_velocity * 0.02;
-					if(uv.x < 0.00001){
-						new_vel += wasd_movement * 0.2 + mouse_movement * 0.2;
+					if(uv.x - 0.5 * _MainTex_TexelSize.x < 0.00001){
+						new_vel += wasd_movement * 0.2;// + mouse_movement * 0.2;
 					}
 					else{
 						float timer = floor(_t);
-						float player_pos = tex2D(_MainTex, float2(0, 0)).xy ;
+						float2 player_pos = tex2D(_MainTex, float2(0, 0)).xy ;
 						float2 repulsive_force = float2(0.0,0.0);
-						float len = length(player_pos - boid_pos);
-						float2 dir = (player_pos-boid_pos)/len;
-//						repulsive_force = dir* (1-clamp(len, 0, 1));
+						float len = clamp(0.2 - length(player_pos - boid_pos),0,1);
+						float2 dir = -normalize(player_pos - boid_pos.xy)*len;
+						repulsive_force = dir.xy;// dir * (1-clamp(len, 0, 1));
 						
-						new_vel += wasd_movement * 0.02 + repulsive_force*0.02 +(rand2(uv.x, timer) - float2(0.5,0.5))*0.02;
+						new_vel += repulsive_force*0.8+(rand2(uv.x, timer) - float2(0.5,0.5))*rand1(uv.x, timer)*0.1;
 
 					}
 

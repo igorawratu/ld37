@@ -456,9 +456,14 @@
 						if (length(orientation) == 0) {
 							orientation.y = -1;
 						}
-
-						col = Overwrite(col, DrawPerson(i.uv, pos.xy, normalize(orientation), float4(0.9, 0.3, 0.3, 1), float4(0.1, 0.1, 0.1, 1),
-							float4(0.5, 0.3, 0.3, 1), 0.25));
+						if(j==0){
+							col = Overwrite(col, DrawPerson(i.uv, pos.xy, normalize(orientation), float4(0.9, 0.9, 0.9, 1), float4(0.1, 0.1, 0.1, 1),
+								float4(0.5, 0.5, 0.5, 1), 0.25));
+						}
+						else{
+							col = Overwrite(col, DrawPerson(i.uv, pos.xy, normalize(orientation), float4(0.9, 0.3, 0.3, 1), float4(0.1, 0.1, 0.1, 1),
+								float4(0.5, 0.3, 0.3, 1), 0.25));
+						}
 					}
 				}
 
