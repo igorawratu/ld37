@@ -56,12 +56,24 @@
 //#endif
 				return false;
 			}
+			float2 toTexel(float2 input)
+			{
+				input *=0.5;
+				input += 0.5;
+				return input;
+			}
+			float2 fromTexel(float2 input)
+			{
+				input -= 0.5;
+				input *=2.0;
+				return input;
+			}
 			float4 UpdateInput(float2 uv) {
 				if(isTexel(uv, float2(0, 0))){
-					return float4(_mouseMovement, 0, 1);
+					return float4(toTexel(_mouseMovement), 0, 1);
 				}
 				if (isTexel(uv, float2(1,0))) {
-					return float4(_wasdMovement, 0, 1);
+					return float4(toTexel(_wasdMovement), 0, 1);
 				}
 				if (isTexel(uv, float2(2,0))) {
 					return _mouseButtons;
