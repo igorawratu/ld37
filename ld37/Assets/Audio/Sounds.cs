@@ -116,7 +116,7 @@ public class Sounds : AudioGen
 
 			// SFX 4 - positive
 			{
-				float env = EnvADSR(t - _sfxTriggerTimes[(int)Types.Positive], 1f, 0.25f, 0.1f, 0.1f, 0.5f, 0.1f);
+				float env = EnvADSR(t - _sfxTriggerTimes[(int)Types.Positive], 1f, 0.25f, 0.1f, 0.1f, 0.0f, 0.0f);
 				float phaseShift = env;
 				float sfx = GenTriangle((t + phaseShift) * NoteC4) * env;
 				values[i] = Mix(values[i], sfx);
@@ -124,7 +124,7 @@ public class Sounds : AudioGen
 
 			// SFX 5 - whistle
 			{
-				float env = EnvADSR(t - _sfxTriggerTimes[(int)Types.Whistle], 1f, 0.25f, 0.1f, 0.1f, 0.5f, 0.1f);
+				float env = EnvADSR(t - _sfxTriggerTimes[(int)Types.Whistle], 1f, 0.25f, 0.1f, 0.1f, 0.0f, 0.0f);
 				float phaseShift = env * env;
 				float sfx = GenTriangle((t + phaseShift) * NoteC4) * env;
 				values[i] = Mix(values[i], sfx);
@@ -132,7 +132,7 @@ public class Sounds : AudioGen
 
 			// SFX 6 - bat
 			{
-				float env = EnvADSR(t - _sfxTriggerTimes[(int)Types.Bat], 1f, 0.25f, 0.1f, 0.1f, 0.5f, 0.1f);
+				float env = EnvADSR(t - _sfxTriggerTimes[(int)Types.Bat], 1f, 0.25f, 0.1f, 0.1f, 0.0f, 0.1f);
 				float phaseShift = -Mathf.Abs(env);
 				float sfx = GenSine(Mathf.Max(0f, t + phaseShift) * NoteC4 * 1f * 0.5f) * GenSine(Mathf.Max(0f, t + phaseShift) * NoteC4 * 1f) * env;
 				values[i] = Mix(values[i], sfx * 0.25f);
