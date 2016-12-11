@@ -434,7 +434,7 @@
 				float4 col = float4(0, 0, 0, 1);
 
 				float4 time_col = float4(0.2, 0.8, 0.2, 1);
-				float4 score_col = float4(0.8, 0.2, 0.2, 1);
+				float4 score_col = float4(0.2, 0.8, 0.2, 1);
 
 				if (score < score_upper && score > score_lower) {
 					score_col = float4(0.8, 0.8, 0.2, 1);
@@ -444,10 +444,10 @@
 				}
 
 				if (_t < time_upper && _t > time_lower) {
-					score_col = float4(0.8, 0.8, 0.2, 1);
+					time_col = float4(0.8, 0.8, 0.2, 1);
 				}
 				else if (_t < time_lower) {
-					score_col = float4(0.2, 0.8, 0.2, 1);
+					time_col = float4(0.8, 0.2, 0.2, 1);
 				}
 
 				col = Overwrite(col, DrawNumber(_t, 0.5, uv, float2(0.2 - (0.5 * (aspect / 2)), 0.9), time_col, false));
@@ -460,6 +460,11 @@
 			{
 				float4 col = float4(0.3, 0.3, 0.3, 1);
 				//return DrawPlayer(i.uv);
+
+				
+				col = Overwrite(col, DrawRoom(i.uv, float2(0.5, 0.5), 4));
+				col = Overwrite(col, DrawPerson(i.uv, float2(0.5, 0.5), float2(sin(_t), cos(_t)), float4(0.9, 0.3, 0.3, 1), float4(0.1, 0.1, 0.1, 1),
+					float4(0.5, 0.3, 0.3, 1), 0.25));
 
 				col = Overwrite(col, DrawEndGame(i.uv, 34049));
 				col = Overwrite(col, DrawTimeScore(i.uv, _t, 25, 10, 5, 15));

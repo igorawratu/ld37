@@ -108,9 +108,6 @@
 				float col_b = ClampedSample(b_uv).b;
 
 				fixed4 col = fixed4(col_r, col_g, col_b, 1) * Vignette(i.uv);
-
-				//return DrawScanline(i.uv, 5, sin(_t));
-
 				col *= DrawScanline(i.uv, 2, 5, sin(_t));
 				return col;
 			}
