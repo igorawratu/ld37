@@ -8,6 +8,11 @@ public class ShaderGraph : MonoBehaviour {
 	private ShaderNode _textNode;
 	private ShaderNode _postprocNode;
 
+	public RenderTexture GetLogicTexture()
+	{
+		return _logicNode.OutputTexture;
+	}
+
     // Use this for initialization
     void Start() {
 		_inputNode = new InputShaderNode();

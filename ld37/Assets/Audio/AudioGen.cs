@@ -4,27 +4,25 @@ using System.Collections;
 public class AudioGen : MonoBehaviour
 {
 	// Notes in hz
-	const float NoteA = 440.0f;
-	const float NoteC3 = 130.81f;
-	const float NoteC4 = 261.6f;
-	const float NoteD4 = 293.66f;
-	const float NoteDS4 = 311.13f;
-	const float NoteE4 = 329.63f;
-	const float NoteC2 = 65.41f;
-	const float NoteC8 = 4186.01f;
+	protected const float NoteA = 440.0f;
+	protected const float NoteC3 = 130.81f;
+	protected const float NoteC4 = 261.6f;
+	protected const float NoteD4 = 293.66f;
+	protected const float NoteDS4 = 311.13f;
+	protected const float NoteE4 = 329.63f;
+	protected const float NoteC2 = 65.41f;
+	protected const float NoteC8 = 4186.01f;
 
 
-	private float t;
-	private float _sampleRate;
+	protected float t;
+	protected float _sampleRate;
 
-	private float[] _randomBuffer = new float[4096];
-	private System.Random _rand = new System.Random();
-	private float _sampleStep;
+	protected float[] _randomBuffer = new float[4096];
+	protected System.Random _rand = new System.Random();
+	protected float _sampleStep;
 
-	void Awake()
+	public virtual void Awake()
 	{
-		_sfxHit = -100f;
-
 		_sampleRate = AudioSettings.outputSampleRate;
 		_sampleStep = 1f / (float)_sampleRate;
 		//Debug.Log(AudioSettings.outputSampleRate);
@@ -35,7 +33,7 @@ public class AudioGen : MonoBehaviour
 		//Application.targetFrameRate = 60;
 	}
 
-	private int _offset;
+	protected int _offset;
 	/*
 	void OnAudioFilterRead(float[] values, int numChannels)
 	{
@@ -62,39 +60,39 @@ public class AudioGen : MonoBehaviour
 		}
 	}*/
 
-	private static float GenSquare(float t)
+	protected static float GenSquare(float t)
 	{
 		return Mathf.Sign(Mathf.Sin(t * Mathf.PI * 2f));
 	}
 
-	private static float GenSine(float t)
+	protected static float GenSine(float t)
 	{
 		return Mathf.Sin(t * Mathf.PI * 2f);
 	}
 
-	private static float GenSaw(float t)
+	protected static float GenSaw(float t)
 	{
 		return (Mathf.Repeat(t, 1f) - 0.5f) * 2f;
 	}
 
-	private static float GenTriangle(float t)
+	protected static float GenTriangle(float t)
 	{
 		return ((Mathf.Abs(Mathf.Repeat(t * 2f, 2f) - 1f) - 0.5f) * 2f);
 	}
 
-	private float GenNoise(float t)
+	protected float GenNoise(float t)
 	{
 		int ro = (int)(t);
 		ro %= _randomBuffer.Length;
 		return _randomBuffer[ro];
 	}
 
-	private float Mix(float a, float b)
+	protected float Mix(float a, float b)
 	{
 		return (a + b);// (a + b) - (a * b);
 	}
 
-	private static float EnvADSR(float t, float volAttack, float volSustain, float a, float d, float s, float r)
+	protected static float EnvADSR(float t, float volAttack, float volSustain, float a, float d, float s, float r)
 	{
 		// Attack
 		if (t < a)
@@ -124,9 +122,9 @@ public class AudioGen : MonoBehaviour
 
 	//private float _songLength;
 	//private static float Song[]
-		
 
-	private static float opQuatiseBits(float x, int bits)
+
+	protected static float opQuatiseBits(float x, int bits)
 	{
 		int a = (int)(x * 65536f);
 		a >>= bits;
@@ -159,18 +157,7 @@ public class AudioGen : MonoBehaviour
 
 	private float[] _bassSong = { NoteC4, NoteC3, NoteC4, NoteC4, NoteC4, NoteC3 };
 
-	private float _sfxHit;
-
-	private void Update()
-	{
-		//_sfxHit = -100f;
-		if (Input.anyKeyDown)
-		{
-			_sfxHit = t;
-		}
-		
-	}
-
+	
 	void OnAudioFilterRead(float[] values, int numChannels)
 	{
 		// 48000 samples / second
@@ -190,9 +177,6 @@ public class AudioGen : MonoBehaviour
 
 			//float sfxHit = GenNoise(t * NoteC4 * 100f) * EnvADSR(t - _sfxHit, 1f, 0.25f, 0.03f, 0.0f, 0.0f, 0.03f);
 			//float sfxHit = GenSine(t * NoteC4) * EnvADSR(t - _sfxHit, 1f, 0.5f, 0.2f, 0.1f, 0.5f, 0.2f);
-
-			float hitEnv = EnvADSR(t - _sfxHit, 1f, 0.5f, 0.1f, 0.0f, 0.2f, 0.2f);
-			float sfxHit = GenSine(t * Mathf.Lerp(NoteC2, NoteC4, hitEnv)) * hitEnv;
 
 			float drum = GenNoise(t * NoteC4 * 10f) * EnvADSR(Mathf.Repeat(t, 1f), 1f, 0.25f, 0.02f, 0.00f, 0.0f, 0.02f);
 
@@ -229,7 +213,6 @@ public class AudioGen : MonoBehaviour
 
 			//values[i] = Mix(values[i], drum);
 			//values[i] = Mix(values[i], hihat);
-			values[i] = Mix(values[i], sfxHit);
 			values[i] = Mix(values[i], lead);
 			values[i] = Mix(values[i], deepBass * 0.25f);
 			//values[i] = ((Mathf.Abs(Mathf.Repeat(t * 2f, 2f) - 1f) - 0.5f) * 2f);          // Triangle (correct)
