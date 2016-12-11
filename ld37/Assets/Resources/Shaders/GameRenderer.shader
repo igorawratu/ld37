@@ -40,11 +40,11 @@
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-				float aspect = _width / _height;
+				/*float aspect = _width / _height;
 				o.uv -= float2(0.5, 0.5);
 				o.uv.x *= aspect;
 
-				o.uv += float2(0.5, 0.5);
+				o.uv += float2(0.5, 0.5);*/
 
 				return o;
 			}
@@ -426,8 +426,8 @@
 					time_col = float4(0.8, 0.2, 0.2, 1);
 				}
 
-				col = Overwrite(col, DrawNumber(_t, 0.5, uv, float2(0.2 - (0.5 * (aspect / 2)), 0.9), time_col, false));
-				col = Overwrite(col, DrawNumber(score, 0.5, uv, float2(0.5 - (0.5 * (aspect / 2)), 0.9), score_col, false));
+				col = Overwrite(col, DrawNumber(_t, 0.5, uv, float2(0.2, 0.9), time_col, false));
+				col = Overwrite(col, DrawNumber(score, 0.5, uv, float2(0.5, 0.9), score_col, false));
 
 				return col;
 			}

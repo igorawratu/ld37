@@ -42,8 +42,6 @@
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-				float aspect = _width / _height;
-
 				return o;
 			}
 
