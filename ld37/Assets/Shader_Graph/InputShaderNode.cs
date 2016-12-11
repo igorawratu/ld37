@@ -30,6 +30,16 @@ public class InputShaderNode : ShaderNode {
 
 		material_.SetVector("_wasdMovement", wasdMove);
 
+		Vector4 mouseKeys = Vector4.zero;
+		if(Input.GetKey(KeyCode.Mouse0)){
+			mouseKeys.x = 1;
+		}
+		if(Input.GetKey(KeyCode.Mouse1)){
+			mouseKeys.y = 1;
+		}
+
+		material_.SetVector("_mouseButtons", mouseKeys);
+
 		base.Execute();
 	}
 }

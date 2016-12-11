@@ -46,6 +46,6 @@ public class ShaderGraph : MonoBehaviour {
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
 		_gameRenderNode.Execute();
-		Graphics.Blit(_logicNode.OutputTexture, dest);
+		Graphics.Blit(_gameRenderNode.OutputTexture, dest);
     }
 }
