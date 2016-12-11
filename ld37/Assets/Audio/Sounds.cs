@@ -42,9 +42,11 @@ public class Sounds : AudioGen
 			RenderTexture.active = null;
 		}
 
+		// Read state out of texture and trigger sound effects
 		Color c1 = _readableLogicTexture.GetPixel(0, 0);
+		//Debug.Log(c1.r.ToString("F4") + " " + c1.g.ToString("F4") + " " + c1.b.ToString("F4") + " " + c1.a.ToString("F4"));
 
-		if (Input.anyKeyDown)
+		if (Input.anyKeyDown || c1.r > 0.0f)
 		{
 			_sfxHit = t;
 		}
