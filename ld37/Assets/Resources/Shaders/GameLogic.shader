@@ -95,7 +95,6 @@
 					//boid velocity
 					if (isTexel(uv, float2(i, 16))) {
 						float2 boid_velocity = tex2D(_MainTex, uv).xy * 0.02;
-						return float4(uv,0,1);
 						return float4(boid_velocity + wasd_movement + mouse_movement, 0, 1);
 					}
 				}

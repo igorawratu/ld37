@@ -85,6 +85,22 @@
 				return tex2D(_MainTex, uv);
 			}
 
+			float4 DrawScanline(float2 uv, float size, float gap, float offset) {
+				float texel_height = 1.0 / _height;
+				float texel_width = 1.0 / _width;
+
+				float pixel_size_y = texel_height * size;
+				float pixel_gap_y = texel_height * gap;
+
+				float pixel_size_x = texel_width * size;
+				float pixel_gap_x = texel_width * gap;
+
+				float modded_v = abs(uv.y) % pixel_gap_y;
+				float modded_u = abs(uv.x) % pixel_gap_x;
+				
+				return modded_v < pixel_size_y || modded_u < pixel_size_x  ? float4(0.5, 0.5, 0.5, 1) : float4(1, 1, 1, 1);
+			}
+
 			fixed4 frag (v2f i) : SV_Target
 			{
 				float ca_strength = 2.5;
@@ -104,6 +120,10 @@
 				float col_b = ClampedSample(b_uv).b;
 
 				fixed4 col = fixed4(col_r, col_g, col_b, 1) * Vignette(i.uv);
+
+				//return DrawScanline(i.uv, 5, sin(_t));
+
+				col *= DrawScanline(i.uv, 2, 5, sin(_t));
 				return col;
 			}
 			ENDCG
