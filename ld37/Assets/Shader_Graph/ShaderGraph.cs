@@ -18,7 +18,7 @@ public class ShaderGraph : MonoBehaviour {
 		_inputNode.SetPredecessor(_inputNode, "_MainTex");
 		_logicNode.SetPredecessor(_inputNode, "_inputTex");
 		_logicNode.SetPredecessor(_logicNode, "_MainTex");
-		_gameRenderNode.SetPredecessor(_logicNode, "_MainTex");
+		_gameRenderNode.SetPredecessor(_logicNode, "_logicTex");
 
 		_postprocNode = new ShaderNode("ChromaAberration", 1920, 1080, false, false);
 		_postprocNode.SetPredecessor(_textNode, "_MainTex");
@@ -40,7 +40,7 @@ public class ShaderGraph : MonoBehaviour {
 
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-		_postprocNode.Execute();
-        Graphics.Blit(_postprocNode.OutputTexture, dest);
+		_gameRenderNode.Execute();
+		Graphics.Blit(_logicNode.OutputTexture, dest);
     }
 }
