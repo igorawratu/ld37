@@ -20,7 +20,7 @@ public class ShaderGraph : MonoBehaviour {
 		_logicNode.SetPredecessor(_logicNode, "_MainTex");
 		_gameRenderNode.SetPredecessor(_logicNode, "_logicTex");
 
-		_postprocNode = new ShaderNode("ChromaAberration", 1920, 1080, false, false);
+		_postprocNode = new ShaderNode("CRTEffect", 1920, 1080, false, false);
 		_postprocNode.SetPredecessor(_textNode, "_MainTex");
 	}
 

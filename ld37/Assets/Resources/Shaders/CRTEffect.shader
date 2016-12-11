@@ -1,4 +1,4 @@
-﻿Shader "ChromaAberration"
+﻿Shader "CRTEffect"
 {
 	Properties
 	{
