@@ -73,19 +73,22 @@
 				float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx;
 //				return float4(rand(uv.x),rand(uv.y), 0, 1);
 
-				if (isTexel(uv, float2(uv.x / _MainTex_TexelSize.x, 0))) {
+				if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 0))) {
 					float2 boid_pos = tex2D(_MainTex, float2(uv.x, 0)).xy;
 					float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy;
 
 					return saturate(float4(boid_pos + boid_velocity * 0.02, 0, 1));
 				}
-				else if (isTexel(uv, float2(uv.x / _MainTex_TexelSize.x, 1))) {
+				else if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 1))) {
 					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1)).xy * 0.02;
 					return float4(boid_velocity + wasd_movement + mouse_movement, 0, 1);
 				}
-				else if (isTexel(uv, float2(uv.x / _MainTex_TexelSize.x, 2))) {
+				else if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 2))) {
 					float2 boid_active = tex2D(_MainTex, float2(uv.x, 2 * _MainTex_TexelSize.y)).xy * 0.02;
 					return float4(boid_active, 0, 1);
+				}
+				else {
+					return float4(0, 0, 0, 1);
 				}
 			}
 
