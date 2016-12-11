@@ -66,33 +66,43 @@
 				return false;
 			}
 
-			float2 rand2(float2 co){
-			    return float2(frac(sin(dot(co * _t, float2(12.9898, 78.233))) * 43758.5453), frac(sin(dot(co * _t, float2(12.9898, 78.233))) * 43758.5453));
-			}
 
 			float rand1(float co) {
 				return frac(sin(dot(float2(co, _t), float2(12.9898, 78.233))) * 43758.5453);
 			}
-
-			bool InRoom(float2 person_pos, float2 room_pos, float room_size) {
-				float texelWidth = 1.0 / _width * room_size;
-
-				float2 halfdims = float2(texelWidth * 200, texelWidth * 150);
-				float2 fixed_uv = person_pos - room_pos;
-
-				return abs(fixed_uv.x) <= halfdims.x && abs(fixed_uv.y) <= halfdims.y;
+			float rand1(float co, float time) {
+				return frac(sin(dot(float2(co, time), float2(12.9898, 78.233))) * 43758.5453);
 			}
 
+			float2 rand2(float co){
+			    return float2(rand1(co), rand1(rand1(co)));
+			}
+			float2 rand2(float co, float time){
+			    return float2(rand1(co, time), rand1(rand1(co, time), time));			
+		    }
 			bool HitBorder(float2 pos, float size) {
 				float pix_size = 1.0 / _width * 100 * size;
 
 				return pos.x < pix_size || pos.y < pix_size;
 			}
 
+			float2 toTexel(float2 input)
+			{
+				input *=0.5;
+				input += 0.5;
+				return input;
+			}
+			float2 fromTexel(float2 input)
+			{
+				input -= 0.5;
+				input *=2.0;
+				return input;
+			}
+
 			float4 UpdatePlayerPos(float2 uv) {
 				float max_score = 10000;
-				float2 mouse_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(0, 0)).xy;
-				float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx;
+				float2 mouse_movement = fromTexel(tex2D(_inputTex, _inputTex_TexelSize.xy * float2(0, 0)).xy);
+				float2 wasd_movement = fromTexel(tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx);
 				float4 prev_score = tex2D(_MainTex, float2(0.5 * _MainTex_TexelSize.x, _MainTex_TexelSize.y * 2.5));
 
 				if (prev_score.y > 0.5) {
@@ -110,17 +120,12 @@
 					}
 
 					if (boid_pos.z > 0.5) {
+
 						if (boid_pos.w > 0.5) {
 							return float4(0, 0, 0, 0);
 						}
-
-						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy;
-						float2 repulsive_force = float2(0.0,0.0);
-						float player_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(0, 0)).xy ;
-						repulsive_force = length(player_pos-boid_pos);
-						 
-
-						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02 + repulsive_force*2);
+						float2 boid_velocity = fromTexel(tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy);
+						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02);
 
 						float destroying = HitBorder(uv, 0.25) ? 1 : 0;
 
@@ -142,7 +147,7 @@
 
 						if (spawn_prob >= chance) {
 							boid_pos.z = 1;
-							boid_pos.xy = (rand2(uv) + float2(1, 1)) / 2;
+							boid_pos.xy = (rand2(uv.x).xy + float2(1, 1)) / 2;
 						}
 						else{
 							boid_pos.z = 0;
@@ -152,11 +157,27 @@
 					}
 				}
 				else if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 1))) {
-					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy;
-					float2 new_vel = boid_velocity + wasd_movement * 0.02 + mouse_movement * 0.02;
+					float2 boid_velocity = fromTexel(tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy);
+					float4 boid_pos = tex2D(_MainTex, float2(uv.x, 0));
+					float2 new_vel = boid_velocity * 0.02;
+					if(uv.x < 0.00001){
+						new_vel += wasd_movement * 0.2 + mouse_movement * 0.2;
+					}
+					else{
+						float timer = floor(_t);
+						float player_pos = tex2D(_MainTex, float2(0, 0)).xy ;
+						float2 repulsive_force = float2(0.0,0.0);
+						float len = length(player_pos - boid_pos);
+						float2 dir = (player_pos-boid_pos)/len;
+//						repulsive_force = dir* (1-clamp(len, 0, 1));
+						
+						new_vel += wasd_movement * 0.02 + repulsive_force*0.02 +(rand2(uv.x, timer) - float2(0.5,0.5))*0.02;
+
+					}
+
 
 					float2 old_vel = length(new_vel) == 0 ? boid_velocity : new_vel;
-					return float4(new_vel, old_vel);
+					return float4(toTexel(new_vel), toTexel(old_vel));
 				}
 				else if (isTexel(uv, float2(0, 2))) {
 					if (_t < 0.5) {
@@ -169,7 +190,7 @@
 						float4 boid_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2((float)j + 0.5, 0.5));
 
 						if (boid_pos.z > 0.5) {
-							scoreForRound += InRoom(boid_pos.xy, float2(0.5, 0.5), 3) ? _dt * 10 : 0;
+//							scoreForRound += InRoom(boid_pos.xy, float2(0.5, 0.5), 3) ? _dt * 10 : 0;
 
 							if (boid_pos.w > 0.5) {
 								scoreForRound -= 50;
