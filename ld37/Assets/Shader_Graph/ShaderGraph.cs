@@ -6,6 +6,7 @@ public class ShaderGraph : MonoBehaviour {
 	private InputShaderNode _inputNode;
 	private ShaderNode _gameRenderNode;
 	private ShaderNode _textNode;
+	private ShaderNode _postprocNode;
 
     // Use this for initialization
     void Start() {
@@ -19,6 +20,8 @@ public class ShaderGraph : MonoBehaviour {
 		_logicNode.SetPredecessor(_logicNode, "_MainTex");
 		_gameRenderNode.SetPredecessor(_logicNode, "_MainTex");
 
+		_postprocNode = new ShaderNode("ChromaAberration", 1920, 1080, false, false);
+		_postprocNode.SetPredecessor(_textNode, "_MainTex");
 	}
 
     // Update is called once per frame
@@ -32,11 +35,12 @@ public class ShaderGraph : MonoBehaviour {
 		_inputNode.Release();
 		_gameRenderNode.Release();
 		_textNode.Release();
+		_postprocNode.Release();
 	}
 
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-		_textNode.Execute();
-        Graphics.Blit(_textNode.OutputTexture, dest);
+		_postprocNode.Execute();
+        Graphics.Blit(_postprocNode.OutputTexture, dest);
     }
 }

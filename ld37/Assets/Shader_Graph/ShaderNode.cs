@@ -106,7 +106,6 @@ public class ShaderNode
 					texelsize.w = predecessor.Value.OutputTexture.height;
 				}
 				material_.SetVector(predecessor.Key + "_TexelSize", texelsize);
-				Debug.Log (shader_.name+" "+predecessor.Key + "_TexelSize "+ texelsize);
             }
         }
         

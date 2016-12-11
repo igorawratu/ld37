@@ -287,6 +287,18 @@
 
 			float _t;
 
+			float2 Rotate(float2 p, float rotation) {
+				float2 rotated;
+				rotated.x = p.x * cos(rotation) - p.y * sin(rotation);
+				rotated.y = p.y * cos(rotation) + p.x * sin(rotation);
+
+				return rotated;
+			}
+
+			float AngleBetween(float2 p1, float2 p2) {
+				return atan2(p2.x, p2.y) - atan2(p1.x, p1.y);
+			}
+
 			float4 Overwrite(float3 col, float3 newcol) {
 				return length(newcol) > 0 ? float4(newcol, 1) : float4(col, 1);
 			}
@@ -300,21 +312,108 @@
 				return dist < pix_size ? col : float4(0, 0, 0, 1);
 			}
 
+			float4 DrawEllipse(float4 col, float2 uv, float2 pos, float2 size, float rotation, float2 cor) {
+				float texelWidth = 1.0 / _width;
+				float2 pix_size = size * texelWidth;
 
-			float4 DrawPerson(float2 uv, float2 pos) 
+				float2 fixed_uv = uv - cor;
+				float2 rotated_uv = Rotate(fixed_uv, rotation) - cor + pos;
+
+				float d = (rotated_uv.x * rotated_uv.x) / (pix_size.x * pix_size.x) + (rotated_uv.y * rotated_uv.y) / (pix_size.y * pix_size.y);
+
+				return d <= 1 ? col : float4(0, 0, 0, 1);
+			}
+
+
+			float4 DrawPerson(float2 uv, float2 pos, float2 orientation, float4 hair_col, float4 shirt_col, float4 shoes_col, float size) 
 			{
+				float texelWidth = 1.0 / _width;
+
+				float PI = 3.14159265359;
+				
 				float4 col = float4(0, 0, 0, 1);
 
-				col = DrawCircle(float4(1, 1, 1, 1), uv, pos, 100);
-				col = Overwrite(col.xyz, DrawCircle(float4(1, 1, 0, 1), uv, pos, 50).xyz);
+				float2 orig_orientation = float2(0, -1);
+				float angle = AngleBetween(orig_orientation, normalize(orientation));
+
+				//shoes
+				col = DrawEllipse(shoes_col, uv, pos + size * float2(60 * texelWidth, 50 * texelWidth), size * float2(50, 100), angle, pos);
+				col = Overwrite(col, DrawEllipse(shoes_col, uv, pos + size * float2(-60 * texelWidth, 50 * texelWidth), size * float2(50, 100), angle, pos));
+				
+				//body
+				col = Overwrite(col, DrawEllipse(shirt_col, uv, pos, size * float2(200, 100), angle, pos));
+				
+				//head
+				col = Overwrite(col, DrawCircle(hair_col, uv, pos, size * 100));
+
+				return col;
+			}
+
+			float4 DrawRectangle(float4 col, float2 uv, float2 pos, float2 halfdims, float rotation, float2 cor) {
+				float2 fixed_uv = uv - cor;
+				float2 rotated_uv = Rotate(fixed_uv, rotation) - cor + pos;
+
+				return abs(rotated_uv.x) <= halfdims.x && abs(rotated_uv.y) <= halfdims.y ? col : float4(0, 0, 0, 1);
+			}
+
+			float4 DrawPlant(float2 uv, float2 pos, float size) {
+				float texelWidth = (1.0 / _width) * size;
+
+				float4 col = float4(0, 0, 0, 1);
+
+				col = Overwrite(col, DrawCircle(float4(0.7, 0.2, 0.2, 1), uv, pos, size));
+				col = Overwrite(col, DrawCircle(float4(0.2, 0.75, 0.2, 1), uv, pos, size * 0.5));
+
+				return col;
+			}
+
+			//room will always be 400x300 multiplied by size
+			float4 DrawRoom(float2 uv, float2 pos, float size) {
+				float4 col = float4(0, 0, 0, 1);
+				float texelWidth = (1.0 / _width) * size;
+
+				//floor
+				col = Overwrite(col, DrawRectangle(float4(0.8, 0.8, 0.8, 1), uv, pos, float2(texelWidth * 200, texelWidth * 150), 0, pos));
+
+				//walls
+				float wall_thickness = 10 * texelWidth;
+
+				float2 wall_x_offset = float2(texelWidth * 200 - wall_thickness / 2, 0);
+				float2 wall_y_offset = float2(0, texelWidth * 150 - wall_thickness / 2);
+
+				col = Overwrite(col, DrawRectangle(float4(0.3, 0.3, 0.3, 1), uv, pos + wall_x_offset, float2(wall_thickness, texelWidth * 150), 0, pos));
+				col = Overwrite(col, DrawRectangle(float4(0.3, 0.3, 0.3, 1), uv, pos - wall_x_offset, float2(wall_thickness, texelWidth * 150), 0, pos));
+				col = Overwrite(col, DrawRectangle(float4(0.3, 0.3, 0.3, 1), uv, pos + wall_y_offset, float2(texelWidth * 200, wall_thickness), 0, pos));
+				col = Overwrite(col, DrawRectangle(float4(0.3, 0.3, 0.3, 1), uv, pos - wall_y_offset, float2(texelWidth * 200, wall_thickness), 0, pos));
+
+				//benches
+				col = Overwrite(col, DrawRectangle(float4(0.5, 0.3, 0.3, 1), uv, pos - (wall_y_offset * 0.75), float2(texelWidth * 150, 20 * texelWidth), 0, pos));
+				col = Overwrite(col, DrawRectangle(float4(0.5, 0.3, 0.3, 1), uv, pos + (wall_y_offset * 0.75), float2(texelWidth * 150, 20 * texelWidth), 0, pos));
+
+				//plants
+				col = Overwrite(col, DrawPlant(uv, pos - (wall_x_offset * 0.85) - (wall_y_offset * 0.75), 20 * size));
+				col = Overwrite(col, DrawPlant(uv, pos + (wall_x_offset * 0.85) + (wall_y_offset * 0.75), 20 * size));
+
+				//table
+				col = Overwrite(col, DrawRectangle(float4(0.1, 0.8, 0.8, 1), uv, pos, float2(texelWidth * 80, texelWidth * 60), 0, pos));
 
 				return col;
 			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				//return DrawNumber((uint)(_t * 1000), 0.5, i.uv, float2(0.1, 0.8));
-				return DrawPerson(i.uv, float2(0.5, 0.5));
+				float aspect = _width / _height;
+				float4 col = float4(0.7, 0.1, 0.1, 1);
+
+				float4 hair = float4(0.1, 0.1, 0.1, 1);
+				float4 shirt = float4(0.1, 0.1, 0.8, 1);
+				float4 shoes = float4(0.2, 0.6, 0.2, 1);
+
+				col = Overwrite(col, DrawRoom(i.uv, float2(abs(sin(_t)), 0.5), 3 * abs(cos(_t))));
+				col = Overwrite(col, DrawPerson(i.uv, float2(0.1, 0.5), float2(sin(_t), cos(_t)), hair, shirt, shoes, 0.4));
+				col = Overwrite(col, DrawNumber((uint)(_t * 1000), 0.5, i.uv, float2(0.1 - (0.5 * (aspect / 2)), 0.9)));
+
+				return col;
 			}
 			ENDCG
 		}

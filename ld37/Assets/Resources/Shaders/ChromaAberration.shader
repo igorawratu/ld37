@@ -87,7 +87,7 @@
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float ca_strength = 5;
+				float ca_strength = 2.5;
 
 				float2 dims = float2(_width, _height);
 
