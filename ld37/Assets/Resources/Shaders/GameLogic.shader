@@ -60,9 +60,14 @@
 				return false;
 			}
 
+			float rand(float co){
+			    return frac(sin(dot(float2(co, _Time),float2(12.9898,78.233))) * 43758.5453);
+			}
+
 			float4 UpdatePlayerPos(float2 uv) {
 				float2 mouse_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(0, 0)).xy;
 				float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx;
+//				return float4(rand(uv.x),rand(uv.y), 0, 1);
 
 				for(int i = 0; i < 32; i++){
 					//boid position
@@ -77,8 +82,13 @@
 						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 1)).xy * 0.02;
 						return float4(boid_velocity + wasd_movement + mouse_movement, 0, 1);
 					}
+					//boid active
+					if (isTexel(uv, float2(i, 2))) {
+						float2 boid_active = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 2)).xy * 0.02;
+						return float4(boid_active, 0, 1);
+					}
 				}
-				return float4(0, 0, 0, 1);
+				return float4(rand(uv.x),rand(uv.y), 0, 1);
 			}
 
 			fixed4 frag (v2f i) : SV_Target
