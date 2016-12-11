@@ -35,6 +35,10 @@
 
 			sampler2D _inputTex;
 			float4 _inputTex_TexelSize;
+			float _t;
+
+			float _width;
+			float _height;
 
 			v2f vert (appdata v)
 			{
@@ -61,7 +65,7 @@
 			}
 
 			float rand(float co){
-			    return frac(sin(dot(float2(co, _Time),float2(12.9898,78.233))) * 43758.5453);
+			    return frac(sin(dot(float2(co, _t),float2(12.9898,78.233))) * 43758.5453);
 			}
 
 			float4 UpdatePlayerPos(float2 uv) {
@@ -74,9 +78,6 @@
 					if(isTexel(uv, float2(i, 0))){
 						float2 boid_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 0)).xy;
 						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 1)).xy;
-						float boid_active = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 2)).x;
-						if(boid_active < 1)
-							return float4(rand(uv.x), rand(rand(uv.x)), 0, 1);
 
 						return saturate(float4(boid_pos + boid_velocity * 0.02, 0, 1));
 					}
@@ -87,20 +88,18 @@
 					}
 					//boid active
 					if (isTexel(uv, float2(i, 2))) {
-						float boid_active = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 2)).x;
-						if(boid_active < 1.0)
-							return float4(1,0, 0, 1);
-						return float4(boid_active, 0, 0, 1);
+						float2 boid_active = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 2)).xy * 0.02;
+						return float4(boid_active, 0, 1);
 					}
 				}
-				return float4(0,0, 0, 1);
+				return float4(rand(uv.x),rand(uv.y), 0, 1);
 			}
 
 			bool InRoom(float2 person_pos, float2 room_pos, float room_size) {
 				float texelWidth = 1.0 / _width * room_size;
 
-				halfdims = float2(texelWidth * 200, texelWidth * 150);
-				float2 fixed_uv - person_pos - room_pos;
+				float2 halfdims = float2(texelWidth * 200, texelWidth * 150);
+				float2 fixed_uv = person_pos - room_pos;
 
 				return abs(fixed_uv.x) <= halfdims.x && abs(fixed_uv.y) <= halfdims.y;
 			}
