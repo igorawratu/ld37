@@ -30,6 +30,7 @@
 			sampler2D _MainTex;
 			float2 _mouseMovement;
 			float2 _wasdMovement;
+			float4 _mouseButtons;
 			float4 _MainTex_ST;
 			float4 _MainTex_TexelSize;
 
@@ -59,8 +60,11 @@
 				if(isTexel(uv, float2(0, 0))){
 					return float4(_mouseMovement, 0, 1);
 				}
-				else if (isTexel(uv, float2(1,0))) {
+				if (isTexel(uv, float2(1,0))) {
 					return float4(_wasdMovement, 0, 1);
+				}
+				if (isTexel(uv, float2(2,0))) {
+					return _mouseButtons;
 				}
 				return float4(0, 0, 1, 1);
 			}

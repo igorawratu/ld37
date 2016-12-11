@@ -8,6 +8,11 @@ public class ShaderGraph : MonoBehaviour {
 	private ShaderNode _textNode;
 	private ShaderNode _postprocNode;
 
+	public RenderTexture GetLogicTexture()
+	{
+		return _logicNode.OutputTexture;
+	}
+
     // Use this for initialization
     void Start() {
 		_inputNode = new InputShaderNode();
@@ -40,7 +45,7 @@ public class ShaderGraph : MonoBehaviour {
 
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-		_postprocNode.Execute();
-		Graphics.Blit(_postprocNode.OutputTexture, dest);
+		_gameRenderNode.Execute();
+		Graphics.Blit(_gameRenderNode.OutputTexture, dest);
     }
 }
