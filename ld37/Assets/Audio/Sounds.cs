@@ -11,6 +11,7 @@ public class Sounds : AudioGen
 		Positive,
 		Whistle,
 		Bat,
+		Wobble,
 	}
 
 	public ShaderGraph _graph;
@@ -134,9 +135,18 @@ public class Sounds : AudioGen
 				float env = EnvADSR(t - _sfxTriggerTimes[(int)Types.Bat], 1f, 0.25f, 0.1f, 0.1f, 0.5f, 0.1f);
 				float phaseShift = -Mathf.Abs(env);
 				float sfx = GenSine(Mathf.Max(0f, t + phaseShift) * NoteC4 * 1f * 0.5f) * GenSine(Mathf.Max(0f, t + phaseShift) * NoteC4 * 1f) * env;
-				values[i] = Mix(values[i], sfx * 0.1f);
+				values[i] = Mix(values[i], sfx * 0.25f);
 			}
 
+			// SFX 7 - wobble
+			{
+				float tt = t - _sfxTriggerTimes[(int)Types.Wobble];
+				float env = EnvADSR(tt, 1f, 0.25f, 0.1f, 0.1f, 0.5f, 0.1f);
+				float phaseShift = GenSine(tt) * GenTriangle(tt);
+				float vibrato = Mathf.PingPong(tt, 2.5f) / 2.5f;
+				float deepBass = vibrato * Mix(GenSine((t + phaseShift) * NoteC4), GenSine((t + 0.5f + phaseShift) * NoteC3)) * env;
+				values[i] = Mix(values[i], deepBass * 2.0f);
+			}
 
 			t += offset;
 
