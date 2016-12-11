@@ -101,7 +101,9 @@
 			}
 
 			bool HitBorder(float2 pos, float size) {
-				return pos.x < size || pos.y < size;
+				float pix_size = 1.0 / _width * 100 * size;
+
+				return pos.x < pix_size || pos.y < pix_size;
 			}
 
 			fixed4 frag (v2f i) : SV_Target

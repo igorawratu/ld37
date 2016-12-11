@@ -26,7 +26,7 @@ public class ShaderGraph : MonoBehaviour {
 		_gameRenderNode.SetPredecessor(_logicNode, "_logicTex");
 
 		_postprocNode = new ShaderNode("CRTEffect", 1920, 1080, false, false);
-		_postprocNode.SetPredecessor(_textNode, "_MainTex");
+		_postprocNode.SetPredecessor(_gameRenderNode, "_MainTex");
 	}
 
     // Update is called once per frame
@@ -45,7 +45,7 @@ public class ShaderGraph : MonoBehaviour {
 
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-		_gameRenderNode.Execute();
-		Graphics.Blit(_gameRenderNode.OutputTexture, dest);
+		_postprocNode.Execute();
+		Graphics.Blit(_postprocNode.OutputTexture, dest);
     }
 }

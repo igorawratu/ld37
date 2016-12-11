@@ -35,24 +35,12 @@
 			float _width;
 			float _height;
 			float _t;
-
-			float rand(float2 co)
-			{
-				return 1;
-				float aspect = _width / _height;
-
-				int v1 = co.x * _width;
-				int v2 = co.y * _height;
-
-				return (v1 + v2) % 2 == 0? 1 : -1;
-			}
 			
 			v2f vert (appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				//o.uv += float2(_t * 0.01, 0);
 
 				float aspect = _width / _height;
 
@@ -106,8 +94,6 @@
 				float ca_strength = 2.5;
 
 				float2 dims = float2(_width, _height);
-
-				float randval = rand(i.uv);
 
 				float2 warped_uv = Warp(i.uv);
 
