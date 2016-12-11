@@ -46,7 +46,7 @@ public class Sounds : AudioGen
 		Color c1 = _readableLogicTexture.GetPixel(0, 0);
 		//Debug.Log(c1.r.ToString("F4") + " " + c1.g.ToString("F4") + " " + c1.b.ToString("F4") + " " + c1.a.ToString("F4"));
 
-		if (Input.anyKeyDown)
+		if (c1.r > 0.5f)
 		{
 			_sfxHitTime = t;
 		}
