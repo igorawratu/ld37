@@ -73,26 +73,20 @@
 				float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx;
 //				return float4(rand(uv.x),rand(uv.y), 0, 1);
 
-				for(int i = 0; i < 32; i++){
-					//boid position
-					if(isTexel(uv, float2(i, 0))){
-						float2 boid_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 0)).xy;
-						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 1)).xy;
+				if (isTexel(uv, float2(uv.x / _MainTex_TexelSize.x, 0))) {
+					float2 boid_pos = tex2D(_MainTex, float2(uv.x, 0)).xy;
+					float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy;
 
-						return saturate(float4(boid_pos + boid_velocity * 0.02, 0, 1));
-					}
-					//boid velocity
-					if (isTexel(uv, float2(i, 1))) {
-						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 1)).xy * 0.02;
-						return float4(boid_velocity + wasd_movement + mouse_movement, 0, 1);
-					}
-					//boid active
-					if (isTexel(uv, float2(i, 2))) {
-						float2 boid_active = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(i, 2)).xy * 0.02;
-						return float4(boid_active, 0, 1);
-					}
+					return saturate(float4(boid_pos + boid_velocity * 0.02, 0, 1));
 				}
-				return float4(rand(uv.x),rand(uv.y), 0, 1);
+				else if (isTexel(uv, float2(uv.x / _MainTex_TexelSize.x, 1))) {
+					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1)).xy * 0.02;
+					return float4(boid_velocity + wasd_movement + mouse_movement, 0, 1);
+				}
+				else if (isTexel(uv, float2(uv.x / _MainTex_TexelSize.x, 2))) {
+					float2 boid_active = tex2D(_MainTex, float2(uv.x, 2 * _MainTex_TexelSize.y)).xy * 0.02;
+					return float4(boid_active, 0, 1);
+				}
 			}
 
 			bool InRoom(float2 person_pos, float2 room_pos, float room_size) {
