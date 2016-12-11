@@ -81,6 +81,19 @@
 				return float4(0, 0, 0, 1);
 			}
 
+			bool InRoom(float2 person_pos, float2 room_pos, float room_size) {
+				float texelWidth = 1.0 / _width * room_size;
+
+				halfdims = float2(texelWidth * 200, texelWidth * 150);
+				float2 fixed_uv - person_pos - room_pos;
+
+				return abs(fixed_uv.x) <= halfdims.x && abs(fixed_uv.y) <= halfdims.y;
+			}
+
+			bool HitBorder(float2 pos, float size) {
+				return pos.x < size || pos.y < size;
+			}
+
 			fixed4 frag (v2f i) : SV_Target
 			{
 				return UpdatePlayerPos(i.uv);
