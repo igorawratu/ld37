@@ -74,9 +74,30 @@
 				return frac(sin(dot(float2(co, _t), float2(12.9898, 78.233))) * 43758.5453);
 			}
 
+			bool InRoom(float2 person_pos, float2 room_pos, float room_size) {
+				float texelWidth = 1.0 / _width * room_size;
+
+				float2 halfdims = float2(texelWidth * 200, texelWidth * 150);
+				float2 fixed_uv = person_pos - room_pos;
+
+				return abs(fixed_uv.x) <= halfdims.x && abs(fixed_uv.y) <= halfdims.y;
+			}
+
+			bool HitBorder(float2 pos, float size) {
+				float pix_size = 1.0 / _width * 100 * size;
+
+				return pos.x < pix_size || pos.y < pix_size;
+			}
+
 			float4 UpdatePlayerPos(float2 uv) {
+				float max_score = 10000;
 				float2 mouse_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(0, 0)).xy;
 				float2 wasd_movement = tex2D(_inputTex, _inputTex_TexelSize.xy * float2(1, 0)).yx;
+				float4 prev_score = tex2D(_MainTex, float2(0.5 * _MainTex_TexelSize.x, _MainTex_TexelSize.y * 2.5));
+
+				if (prev_score.y > 0.5) {
+					return prev_score;
+				}
 
 				//return float4(rand2(uv), 0, 1);
 //				return float4(rand(uv.x),rand(uv.y), 0, 1);
@@ -85,11 +106,15 @@
 					float4 boid_pos = tex2D(_MainTex, float2(uv.x, 0));
 
 					if (_t < 0.5) {
-						return float4(0, 0, 0, 1);
+						return float4(500, 0, 0, 1);
 					}
 
 					if (boid_pos.z > 0.5) {
-						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy ;
+						if (boid_pos.w > 0.5) {
+							return float4(0, 0, 0, 0);
+						}
+
+						float2 boid_velocity = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(uv.x, 1)).xy;
 						float2 repulsive_force = float2(0.0,0.0);
 						float player_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(0, 0)).xy ;
 						repulsive_force = length(player_pos-boid_pos);
@@ -97,7 +122,9 @@
 
 						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02 + repulsive_force*2);
 
-						return float4(newpos, boid_pos.z, 1);
+						float destroying = HitBorder(uv, 0.25) ? 1 : 0;
+
+						return float4(newpos, boid_pos.z, destroying);
 					}
 					//spawn logic here
 					else {
@@ -131,25 +158,40 @@
 					float2 old_vel = length(new_vel) == 0 ? boid_velocity : new_vel;
 					return float4(new_vel, old_vel);
 				}
+				else if (isTexel(uv, float2(0, 2))) {
+					if (_t < 0.5) {
+						return float4(500 / max_score, 0, 0, 1);
+					}
+
+					float scoreForRound = 0.0;
+
+					for (int j = 0; j < 32; ++j) {
+						float4 boid_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2((float)j + 0.5, 0.5));
+
+						if (boid_pos.z > 0.5) {
+							scoreForRound += InRoom(boid_pos.xy, float2(0.5, 0.5), 3) ? _dt * 10 : 0;
+
+							if (boid_pos.w > 0.5) {
+								scoreForRound -= 50;
+							}
+						}
+					} 
+
+					prev_score.x = (prev_score.x * max_score + scoreForRound) / max_score;
+
+					if (prev_score.x * max_score < 1) {
+						prev_score.z = _t / max_score;
+						prev_score.y = 1;
+					}
+
+					return prev_score;
+				}
 				else {
 					return float4(0, 0, 0, 1);
 				}
 			}
 
-			bool InRoom(float2 person_pos, float2 room_pos, float room_size) {
-				float texelWidth = 1.0 / _width * room_size;
-
-				float2 halfdims = float2(texelWidth * 200, texelWidth * 150);
-				float2 fixed_uv = person_pos - room_pos;
-
-				return abs(fixed_uv.x) <= halfdims.x && abs(fixed_uv.y) <= halfdims.y;
-			}
-
-			bool HitBorder(float2 pos, float size) {
-				float pix_size = 1.0 / _width * 100 * size;
-
-				return pos.x < pix_size || pos.y < pix_size;
-			}
+			
 
 			fixed4 frag (v2f i) : SV_Target
 			{

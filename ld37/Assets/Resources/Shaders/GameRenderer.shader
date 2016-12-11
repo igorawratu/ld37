@@ -458,11 +458,18 @@
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float4 col = float4(0.2, 0.2, 0.2, 1);
-				//return DrawPlayer(i.uv);
+				float max_score = 10000;
 
-				
-				col = Overwrite(col, DrawRoom(i.uv, float2(0.5, 0.5), 4));
+				float4 col = float4(0.2, 0.2, 0.2, 1);
+
+				float4 score = tex2D(_MainTex, float2(0.5 * _MainTex_TexelSize.x, 2.5 * _MainTex_TexelSize.y));
+				if (score.y > 0.5) {
+					col = Overwrite(col, DrawEndGame(i.uv, score.z * max_score));
+
+					return col;
+				}
+			
+				col = Overwrite(col, DrawRoom(i.uv, float2(0.5, 0.5), 3));
 
 				for (int j = 0; j < 32; ++j) {
 					float4 pos = tex2D(_MainTex, float2(((float)j + 0.5) * _MainTex_TexelSize.x, 0.5 * _MainTex_TexelSize.y));
@@ -479,8 +486,7 @@
 					}
 				}
 
-				col = Overwrite(col, DrawEndGame(i.uv, 34049));
-				col = Overwrite(col, DrawTimeScore(i.uv, _t, 25, 10, 5, 15));
+				col = Overwrite(col, DrawTimeScore(i.uv, score.x * max_score, 25, 10, 5, 15));
 
 				return col;
 			}
