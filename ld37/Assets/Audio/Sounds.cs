@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public class Sounds : AudioGen
 {
@@ -18,6 +18,8 @@ public class Sounds : AudioGen
 	private Texture2D _readableLogicTexture;
 	private float[] _sfxTriggerTimes = new float[System.Enum.GetNames(typeof(Sounds.Types)).Length];
 
+    private float[] prev_state = null;
+
 	public override void Awake()
 	{
 		for (int i = 0; i < _sfxTriggerTimes.Length; i++)
@@ -25,6 +27,8 @@ public class Sounds : AudioGen
 			_sfxTriggerTimes[i] = -100f;
 		}
 		base.Awake();
+
+        prev_state = new float[32];
 	}
 
 	private void OnDestroy()
@@ -36,8 +40,33 @@ public class Sounds : AudioGen
 		}
 	}
 
-	// Update is called once per frame
-	void Update()
+    KeyValuePair<bool, bool> CheckSpawnDespawn(float[] prev, float[] curr)
+    {
+        bool spawn = false;
+        bool despawn = false;
+
+        for (int i = 0; i < 32; ++i)
+        {
+            int p = (int)(prev[i] + 0.5);
+            int c = (int)(curr[i] + 0.5);
+            if (p != c)
+            {
+                if(c == 1)
+                {
+                    spawn = true;
+                }
+                else
+                {
+                    despawn = true;
+                }
+            }
+        }
+
+        return new KeyValuePair<bool, bool>(spawn, despawn);
+    }
+
+    // Update is called once per frame
+    void Update()
 	{
 		RenderTexture logicTexture = _graph.GetLogicTexture();
 
@@ -56,12 +85,42 @@ public class Sounds : AudioGen
 			RenderTexture.active = null;
 		}
 
-		// Read state out of texture and trigger sound effects
-		Color c1 = _readableLogicTexture.GetPixel(0, 0);
-		//Debug.Log(c1.r.ToString("F4") + " " + c1.g.ToString("F4") + " " + c1.b.ToString("F4") + " " + c1.a.ToString("F4"));
+        float[] curr_state = new float[32];
+        for(int i = 0; i < 32; ++i)
+        {
+            var col = _readableLogicTexture.GetPixel(i, 0);
+            curr_state[i] = col.b;
+        }
 
-		// DEBUG: Trigger from keybaord numbers
-		for (int i = 0; i < _sfxTriggerTimes.Length; i++)
+        // Read state out of texture and trigger sound effects
+        if (prev_state != null)
+        {
+            var spawned = CheckSpawnDespawn(prev_state, curr_state);
+
+            if (spawned.Key)
+            {
+                _sfxTriggerTimes[0] = t;
+            }
+
+            if (spawned.Value)
+            {
+                _sfxTriggerTimes[2] = t;
+            }
+        }
+
+        if (Input.anyKey)
+        {
+            if(t - _sfxTriggerTimes[4] >= 0.5)
+            {
+                _sfxTriggerTimes[4] = t;
+            }
+        }
+
+        prev_state = curr_state;
+        //Debug.Log(c1.r.ToString("F4") + " " + c1.g.ToString("F4") + " " + c1.b.ToString("F4") + " " + c1.a.ToString("F4"));
+
+        // DEBUG: Trigger from keybaord numbers
+        for (int i = 0; i < _sfxTriggerTimes.Length; i++)
 		{
 			if (Input.GetKeyDown(KeyCode.Alpha1 + i))
 			{
