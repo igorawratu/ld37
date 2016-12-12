@@ -402,7 +402,7 @@
 			}
 
 			float4 DrawEndGame(float2 uv, float time) {
-				return DrawNumber(time, 1, uv, float2(0.5, 0.5), float4(0.8, 0.2, 0.2, 1), true);
+				return DrawNumber((uint)time, 1, uv, float2(0.5, 0.5), float4(0.8, 0.2, 0.2, 1), true);
 			}
 
 			float4 DrawTimeScore(float2 uv, float score, float score_upper, float score_lower, float time_lower, float time_upper) {

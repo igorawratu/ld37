@@ -219,7 +219,7 @@
 
 						float2 player_force = d < 4 ? normalize(dir) / max(1, d * d) * 0.025 : 0;
 
-						float2 wall_force = normalize(boid_pos - float2(0.5, 0.5)) * 0.025;
+						float2 wall_force = normalize(boid_pos - float2(0.5, 0.5)) * 0.042;
 
 						new_vel = wall_force + player_force * 5;
 					}
