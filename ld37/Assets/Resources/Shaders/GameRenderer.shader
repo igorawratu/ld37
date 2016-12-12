@@ -436,7 +436,7 @@
 			{
 				float max_score = 10000;
 
-				float4 col = float4(0.2, 0.2, 0.2, 1);
+				float4 col = float4(0.4, 0.4, 0.7, 1);
 
 				float4 score = tex2D(_MainTex, float2(0.5 * _MainTex_TexelSize.x, 2.5 * _MainTex_TexelSize.y));
 				if (score.y > 0.5) {
@@ -445,7 +445,7 @@
 					return col;
 				}
 			
-				col = Overwrite(col, DrawRoom(i.uv, float2(0.5, 0.5), 3));
+				col = Overwrite(col, DrawRoom(i.uv, float2(0.5, 0.5), 2));
 
 				for (int j = 0; j < 32; ++j) {
 					float4 pos = tex2D(_MainTex, float2(((float)j + 0.5) * _MainTex_TexelSize.x, 0.5 * _MainTex_TexelSize.y));
@@ -457,17 +457,17 @@
 							orientation.y = -1;
 						}
 						if(j==0){
-							col = Overwrite(col, DrawPerson(i.uv, pos.xy, normalize(orientation), float4(0.9, 0.9, 0.9, 1), float4(0.1, 0.1, 0.1, 1),
-								float4(0.5, 0.5, 0.5, 1), 0.25));
+							col = Overwrite(col, DrawPerson(i.uv, pos.xy, normalize(orientation), float4(0.8, 0.8, 0.1, 1), float4(0.2, 0.2, 0.6, 1),
+								float4(0.2, 0.2, 0.2, 1), 0.25));
 						}
 						else{
-							col = Overwrite(col, DrawPerson(i.uv, pos.xy, normalize(orientation), float4(0.9, 0.3, 0.3, 1), float4(0.1, 0.1, 0.1, 1),
-								float4(0.5, 0.3, 0.3, 1), 0.25));
+							col = Overwrite(col, DrawPerson(i.uv, pos.xy, normalize(orientation), float4(0.7, 0.1, 0.1, 1), float4(0.2, 0.6, 0.2, 1),
+								float4(0.7, 0.2, 0.7, 1), 0.25));
 						}
 					}
 				}
 
-				col = Overwrite(col, DrawTimeScore(i.uv, score.x * max_score, 25, 10, 5, 15));
+				col = Overwrite(col, DrawTimeScore(i.uv, score.x * max_score, 400, 250, 30, 60));
 
 				return col;
 			}

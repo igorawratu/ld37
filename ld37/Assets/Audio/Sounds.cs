@@ -20,6 +20,8 @@ public class Sounds : AudioGen
 
     private float[] prev_state = null;
 
+    bool game_end = false;
+
 	public override void Awake()
 	{
 		for (int i = 0; i < _sfxTriggerTimes.Length; i++)
@@ -45,7 +47,7 @@ public class Sounds : AudioGen
         bool spawn = false;
         bool despawn = false;
 
-        for (int i = 0; i < 32; ++i)
+        for (int i = 1; i < 32; ++i)
         {
             int p = (int)(prev[i] + 0.5);
             int c = (int)(curr[i] + 0.5);
@@ -63,6 +65,11 @@ public class Sounds : AudioGen
         }
 
         return new KeyValuePair<bool, bool>(spawn, despawn);
+    }
+
+    bool CheckGameEnded(Color state)
+    {
+        return state.g > 0.5;
     }
 
     // Update is called once per frame
@@ -108,15 +115,48 @@ public class Sounds : AudioGen
             }
         }
 
-        if (Input.anyKey)
+        if (Input.GetKey(KeyCode.W))
         {
-            if(t - _sfxTriggerTimes[4] >= 0.5)
+            if(t - _sfxTriggerTimes[3] >= 0.5)
+            {
+                _sfxTriggerTimes[3] = t;
+            }
+        }
+
+        if (Input.GetKey(KeyCode.S))
+        {
+            if (t - _sfxTriggerTimes[4] >= 0.5)
             {
                 _sfxTriggerTimes[4] = t;
             }
         }
 
+
+        if (Input.GetKey(KeyCode.A))
+        {
+            if (t - _sfxTriggerTimes[5] >= 0.5)
+            {
+                _sfxTriggerTimes[5] = t;
+            }
+        }
+
+        if (Input.GetKey(KeyCode.D))
+        {
+            if (t - _sfxTriggerTimes[6] >= 0.5)
+            {
+                _sfxTriggerTimes[6] = t;
+            }
+        }
+
         prev_state = curr_state;
+
+        bool ended = CheckGameEnded(_readableLogicTexture.GetPixel(0, 2));
+        if(ended != game_end)
+        {
+            game_end = ended;
+            _sfxTriggerTimes[1] = t;
+        }
+
         //Debug.Log(c1.r.ToString("F4") + " " + c1.g.ToString("F4") + " " + c1.b.ToString("F4") + " " + c1.a.ToString("F4"));
 
         // DEBUG: Trigger from keybaord numbers

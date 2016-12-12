@@ -68,10 +68,10 @@
 
 
 			float rand1(float co) {
-				return frac(sin(dot(float2(co, _t), float2(12.9898, 78.233))) * 43758.5453);
+				return frac(sin(dot(float2(co, cos(_t)), float2(1.9898, -0.233))) * 43758.5453);
 			}
 			float rand1(float co, float time) {
-				return frac(sin(dot(float2(co, time), float2(12.9898, 78.233))) * 43758.5453);
+				return frac(sin(dot(float2(co, cos(time)), float2(1.9898, -0.233))) * 43758.5453);
 			}
 
 			bool InRoom(float2 person_pos, float2 room_pos, float room_size) {
@@ -88,7 +88,7 @@
 			}
 
 			float2 rand2(float co, float time){
-			    return float2(rand1(co, time), rand1(rand1(co, time), time));			
+				return float2(rand1(co, time), rand1(rand1(co, time), time));			
 		    }
 			bool HitBorder(float2 pos, float size) {
 				float texel_width = (1.0 / 1920) * 100 * size;
@@ -139,7 +139,7 @@
 							return float4(0, 0, 0, 0);
 						}
 						float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy;
-						float2 newpos = saturate(boid_pos.xy + boid_velocity * 0.02);
+						float2 newpos = saturate(boid_pos.xy + boid_velocity * _dt);
 
 						if(uv.x  - 0.5 * _MainTex_TexelSize.x < 0.00001){
 							return float4(newpos, boid_pos.z, 0);
@@ -150,10 +150,10 @@
 					}
 					//spawn logic here
 					else {
-						if(uv.x - 0.5 * _MainTex_TexelSize.x< 0.00001){
+						if(uv.x - 0.5 * _MainTex_TexelSize.x < 0.00001){
 							boid_pos.w = 0;
 							boid_pos.z = 1;
-							boid_pos.xy = (rand2(uv.x).xy + float2(1, 1)) / 2;
+							boid_pos.xy = float2(0.5, 0.5);
 							return boid_pos;
 						}
 
@@ -171,8 +171,7 @@
 						boid_pos.w = 0;
 						if (spawn_prob >= chance) {
 							boid_pos.z = 1;
-							boid_pos.xy = (rand2(uv.x).xy + float2(1, 1)) / 2;
-							
+							boid_pos.xy = (rand2(uv.x * 32, _t).xy + float2(1, 1)) / 2;
 						}
 						else{
 							boid_pos.z = 0;
@@ -184,20 +183,45 @@
 				else if (isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 1))) {
 					float2 boid_velocity = tex2D(_MainTex, float2(uv.x, _MainTex_TexelSize.y * 1.5)).xy;
 					float4 boid_pos = tex2D(_MainTex, float2(uv.x, 0));
-					float2 new_vel = boid_velocity * 0.02;
+
+					if (boid_pos.z < 0.5) {
+						return float4(0, 0, 0, 0);
+					}
+
+					float2 new_vel = boid_velocity;
+
 					if(uv.x - 0.5 * _MainTex_TexelSize.x < 0.00001){
-						new_vel += wasd_movement * 0.2;// + mouse_movement * 0.2;
+						new_vel = wasd_movement / 2;// + mouse_movement * 0.2;
 					}
 					else{
 						float timer = floor(_t);
-						float2 player_pos = tex2D(_MainTex, float2(0, 0)).xy ;
-						float2 repulsive_force = float2(0.0,0.0);
-						float len = clamp(0.2 - length(player_pos - boid_pos),0,1);
-						float2 dir = -normalize(player_pos - boid_pos.xy)*len;
-						repulsive_force = dir.xy;// dir * (1-clamp(len, 0, 1));
 						
-						new_vel += repulsive_force*0.8+(rand2(uv.x, timer) - float2(0.5,0.5))*rand1(uv.x, timer)*0.1;
+						float2 repulsive_force = float2(0.0,0.0);
+						
+						/*for (int j = 0; j < 32; j++) {
+							if (!isTexel(uv, float2((uv.x - 0.5 * _MainTex_TexelSize.x) / _MainTex_TexelSize.x, 1))) {
+								float4 repelant = tex2D(_MainTex, _MainTex_TexelSize.xy * float2((float)j + 0.5, 0.5));
 
+								float2 dir = length(boid_pos.xy - repelant.xy);
+								float d = length(dir);
+
+								float2 force = normalize(dir) / max(d * d, 1);
+
+								force *= repelant.z < 0.5 ? 0 : 1;
+
+								repulsive_force += force;
+							}
+						}*/
+
+						float4 player = tex2D(_MainTex, _MainTex_TexelSize.xy * float2(0.5, 0.5));
+						float2 dir = boid_pos.xy - player.xy;
+						float d = length(dir) * 10;
+
+						float2 player_force = d < 4 ? normalize(dir) / max(1, d * d) * 0.025 : 0;
+
+						float2 wall_force = normalize(boid_pos - float2(0.5, 0.5)) * 0.025;
+
+						new_vel = wall_force + player_force * 5;
 					}
 
 
@@ -211,11 +235,11 @@
 
 					float scoreForRound = 0.0;
 
-					for (int j = 0; j < 32; j++) {
+					for (int j = 1; j < 32; j++) {
 						float4 boid_pos = tex2D(_MainTex, _MainTex_TexelSize.xy * float2((float)j + 0.5, 0.5));
 
 						if (boid_pos.z > 0.5) {
-							scoreForRound += InRoom(boid_pos.xy, float2(0.5, 0.5), 3) ? _dt : 0;
+							scoreForRound += InRoom(boid_pos.xy, float2(0.5, 0.5), 2) ? _dt * 25 : 0;
 
 							if (boid_pos.w > 0.5) {
 								scoreForRound -= 50;
